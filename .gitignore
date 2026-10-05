@@ -30,6 +30,7 @@ Thumbs.db
 *.bag
 *.db3
 *.mp4
+!/demo_video/*.mp4
 report/*.aux
 report/*.log
 report/*.out

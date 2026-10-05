@@ -153,8 +153,8 @@ reached the correct chairs at 1.080 m and 1.170 m, respectively.
 2. Show the red command being entered, its selected box, and the yellow map target.
 3. Show the navigation path, motion, arrival, and measured final distance.
 4. Label the scene reset, then repeat with the blue command and blue instance.
-5. Label any speed-up. The final video is recorded manually by Ling Shen; no
-   recording or video link is included in this repository.
+5. Label any speed-up. Save the completed manual recording in
+   [demo_video/](demo_video/), for example as `project3_demo.mp4`.
 
 The validated examples and limitations are in the report. They are individual
 demonstrations, not a general success-rate benchmark. Targets must be visible,
