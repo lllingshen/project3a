@@ -117,3 +117,13 @@ model.config metadata (verbatim):
 Everything else in this repository (all ROS 2 packages, launch files,
 worlds, configuration, and documentation) is original course material
 covered by the repository LICENSE file (MIT).
+
+----------------------------------------------------------------------
+Project 3 material variants: Project3RedChair and Project3BlueChair
+----------------------------------------------------------------------
+The two variants reuse the VisitorChair mesh by Wan Yi Seow / Open Robotics
+attributed above, under Creative Commons Attribution 4.0 International:
+https://creativecommons.org/licenses/by/4.0/
+Changes by Ling Shen for Project 3: replace the textured visual material with
+plain red or blue material; retain the original mesh geometry and reference
+the unchanged VisitorChair collision mesh. Used in locateanything_chairs.world.

@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!-- Project 3 color grounding scene. Both chairs are visible from robot spawn
+     (-1.2, 0, 0), facing +X. Poses below are environment definitions and may
+     be read only by the post-hoc evaluator, never by target-selection code.
+     Original VisitorChair geometry is retained; only materials differ. -->
+<sdf version="1.6">
+  <world name="locateanything_chairs">
+    <include><uri>model://sun</uri></include>
+    <include><uri>model://ground_plane</uri></include>
+    <physics type="ode"><real_time_factor>1.0</real_time_factor><max_step_size>0.001</max_step_size></physics>
+    <scene><ambient>0.5 0.5 0.5 1</ambient><background>0.7 0.75 0.8 1</background></scene>
+    <!-- Ground truth/reset service used by validation and manual reset only. -->
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros><namespace>/gazebo</namespace></ros><update_rate>10</update_rate>
+    </plugin>
+    <model name="wall_east"><static>true</static><pose>3.1 0 1.25 0 0 0</pose>
+      <link name="wall"><collision name="collision"><geometry><box><size>0.2 5.4 2.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 5.4 2.5</size></box></geometry>
+          <material><ambient>0.65 0.65 0.65 1</ambient><diffuse>0.75 0.75 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_west"><static>true</static><pose>-3.1 0 1.25 0 0 0</pose>
+      <link name="wall"><collision name="collision"><geometry><box><size>0.2 5.4 2.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.2 5.4 2.5</size></box></geometry>
+          <material><ambient>0.65 0.65 0.65 1</ambient><diffuse>0.75 0.75 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_north"><static>true</static><pose>0 2.6 1.25 0 0 0</pose>
+      <link name="wall"><collision name="collision"><geometry><box><size>6.4 0.2 2.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>6.4 0.2 2.5</size></box></geometry>
+          <material><ambient>0.65 0.65 0.65 1</ambient><diffuse>0.75 0.75 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall_south"><static>true</static><pose>0 -2.6 1.25 0 0 0</pose>
+      <link name="wall"><collision name="collision"><geometry><box><size>6.4 0.2 2.5</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>6.4 0.2 2.5</size></box></geometry>
+          <material><ambient>0.65 0.65 0.65 1</ambient><diffuse>0.75 0.75 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <include><uri>model://Project3RedChair</uri><name>demo_red_chair</name><pose>1.2 0.8 0 0 0 -1.0</pose></include>
+    <include><uri>model://Project3BlueChair</uri><name>demo_blue_chair</name><pose>1.2 -0.8 0 0 0 -1.0</pose></include>
+  </world>
+</sdf>

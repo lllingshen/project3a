@@ -48,6 +48,8 @@ from std_msgs.msg import Bool, String
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import PoseStamped
 from nav2_msgs.action import NavigateToPose
+from action_msgs.msg import GoalStatus, GoalStatusArray
+from action_msgs.srv import CancelGoal
 
 try:
     from tb3_query.msg import SemanticQueryResult
@@ -112,6 +114,18 @@ class CoordinatorNode(Node):
         self._nav_timeout_timer = None
         self._sweep_timer = None
         self._sweep_done = False
+        self._pending_timer = None
+        self._active_command = ""
+        self._early_goal = None
+        self._command_started_ns = 0
+        self._command_forwarded = False
+        self._handoff_timer = None
+        self._handoff_cancel_future = None
+        self._handoff_cancel_ack = False
+        self._handoff_quiet_since_ns = None
+        self._active_nav_goals = set()
+        self._terminal_nav_goals = set()
+        self._canceling_goal_ids = set()
 
         # ── QoS ───────────────────────────────────────────────────────────
         reliable_qos = QoSProfile(
@@ -136,6 +150,12 @@ class CoordinatorNode(Node):
 
         # ── Nav2 action client ────────────────────────────────────────────
         self._nav_client = ActionClient(self, NavigateToPose, nav_action_name)
+        action_path = nav_action_name.rstrip("/")
+        self._cancel_all_client = self.create_client(CancelGoal, action_path + "/_action/cancel_goal")
+        status_qos = QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE,
+                                durability=DurabilityPolicy.TRANSIENT_LOCAL)
+        self.create_subscription(GoalStatusArray, action_path + "/_action/status",
+                                 self._nav_status_cb, status_qos)
 
         self._set_exploration(True)
         self._publish_status("started in EXPLORING mode")
@@ -180,6 +200,17 @@ class CoordinatorNode(Node):
         cmd = msg.data.strip()
         if not cmd:
             return
+        if self._mode in (Mode.SEMANTIC_QUERYING, Mode.SEMANTIC_NAV):
+            self._publish_status("busy; wait for the current command to finish")
+            return
+        self._active_command = cmd
+        self._early_goal = None
+        self._command_started_ns = self.get_clock().now().nanoseconds
+        self._command_forwarded = False
+        self._handoff_cancel_future = None
+        self._handoff_cancel_ack = False
+        self._handoff_quiet_since_ns = None
+        self._canceling_goal_ids.clear()
 
         self.get_logger().info("User command: '%s'" % cmd)
 
@@ -190,28 +221,102 @@ class CoordinatorNode(Node):
         if self._sweep_timer is not None:
             self._sweep_timer.cancel()
             self._sweep_timer = None
-            cmd = Twist()
-            self._cmd_vel_pub.publish(cmd)
+            stop = Twist()
+            self._cmd_vel_pub.publish(stop)
         self._cancel_nav_goal()
         self._set_exploration(False)
         self._set_mode(Mode.SEMANTIC_QUERYING)
 
-        fwd = String()
-        fwd.data = cmd
-        self._query_cmd_pub.publish(fwd)
-        self._publish_status("forwarded command: '%s'" % cmd)
+        self._arm_pending_timeout(120.0)
+        self._handoff_timer = self.create_timer(0.05, self._handoff_tick)
+        self._publish_status("waiting for exploration cancellation and Nav2 idle")
+
+    def _nav_status_cb(self, msg: GoalStatusArray) -> None:
+        active = (GoalStatus.STATUS_ACCEPTED, GoalStatus.STATUS_EXECUTING, GoalStatus.STATUS_CANCELING)
+        self._active_nav_goals = {tuple(row.goal_info.goal_id.uuid) for row in msg.status_list
+                                  if row.status in active}
+        self._terminal_nav_goals = {tuple(row.goal_info.goal_id.uuid) for row in msg.status_list
+                                    if row.status in (GoalStatus.STATUS_SUCCEEDED,
+                                                      GoalStatus.STATUS_CANCELED,
+                                                      GoalStatus.STATUS_ABORTED)}
+        self._canceling_goal_ids.difference_update(self._terminal_nav_goals)
+        if self._active_nav_goals or self._canceling_goal_ids:
+            self._handoff_quiet_since_ns = None
+
+    def _handoff_tick(self) -> None:
+        if self._mode != Mode.SEMANTIC_QUERYING or self._command_forwarded:
+            return
+        # CancelGoal's all-zero request cancels all goals. The acknowledgement
+        # also handles a fresh idle server that has never published status.
+        if self._handoff_cancel_future is None:
+            if self._cancel_all_client.service_is_ready():
+                self._handoff_cancel_future = self._cancel_all_client.call_async(CancelGoal.Request())
+            return
+        if not self._handoff_cancel_ack:
+            if not self._handoff_cancel_future.done():
+                return
+            try:
+                response = self._handoff_cancel_future.result()
+                if response.return_code != CancelGoal.Response.ERROR_NONE:
+                    raise RuntimeError("Nav2 cancellation was not acknowledged")
+            except Exception as exc:
+                self._publish_status("cancellation handoff failed: %s" % exc)
+                self._pending_timeout()
+                return
+            self._canceling_goal_ids = {tuple(goal.goal_id.uuid) for goal in response.goals_canceling}
+            self._canceling_goal_ids.difference_update(self._terminal_nav_goals)
+            self._handoff_cancel_ack = True
+        if self._active_nav_goals or self._canceling_goal_ids:
+            self._handoff_quiet_since_ns = None
+            return
+        now_ns = self.get_clock().now().nanoseconds
+        if self._handoff_quiet_since_ns is None:
+            self._handoff_quiet_since_ns = now_ns
+            return
+        if now_ns - self._handoff_quiet_since_ns < 300_000_000:
+            return
+        self._handoff_timer.cancel()
+        self._handoff_timer = None
+        self._command_forwarded = True
+        self._query_cmd_pub.publish(String(data=self._active_command))
+        self._publish_status("Nav2 idle; forwarded command: '%s'" % self._active_command)
+
+    def _arm_pending_timeout(self, seconds: float) -> None:
+        if self._pending_timer is not None:
+            self._pending_timer.cancel()
+        self._pending_timer = self.create_timer(seconds, self._pending_timeout)
+
+    def _pending_timeout(self) -> None:
+        self._pending_timer.cancel()
+        self._pending_timer = None
+        if self._handoff_timer is not None:
+            self._handoff_timer.cancel()
+            self._handoff_timer = None
+        if self._mode in (Mode.SEMANTIC_QUERYING, Mode.SEMANTIC_NAV):
+            self._set_mode(Mode.TARGET_FAILED)
+            self._publish_status("handoff, query or goal-pose timeout; no new goal sent")
+            self._schedule_resume()
 
     def _query_result_cb(self, msg: SemanticQueryResult) -> None:
-        if self._mode != Mode.SEMANTIC_QUERYING:
+        if self._mode != Mode.SEMANTIC_QUERYING or not self._command_forwarded:
             return
+        if msg.query_text != self._active_command:
+            return
+        if self._pending_timer is not None:
+            self._pending_timer.cancel()
+            self._pending_timer = None
 
         if msg.success:
             self._set_mode(Mode.SEMANTIC_NAV)
+            self._arm_pending_timeout(5.0)
             self._publish_status(
                 "target selected: %s (%s) at (%.2f, %.2f) — waiting for goal pose"
                 % (msg.object_id, msg.semantic_name,
                    msg.position.x, msg.position.y)
             )
+            if self._early_goal is not None:
+                early, self._early_goal = self._early_goal, None
+                self._goal_pose_cb(early)
         else:
             self.get_logger().warn("Query failed: %s" % msg.status_message)
             self._set_mode(Mode.TARGET_FAILED)
@@ -219,8 +324,21 @@ class CoordinatorNode(Node):
             self._schedule_resume()
 
     def _goal_pose_cb(self, msg: PoseStamped) -> None:
+        if not self._command_forwarded:
+            return
+        stamp_ns = msg.header.stamp.sec * 1000000000 + msg.header.stamp.nanosec
+        if stamp_ns < self._command_started_ns:
+            return
+        # The adapter and coordinator receive the result independently; DDS
+        # can deliver the adapter's pose before our selected-target callback.
+        if self._mode == Mode.SEMANTIC_QUERYING:
+            self._early_goal = msg
+            return
         if self._mode != Mode.SEMANTIC_NAV:
             return
+        if self._pending_timer is not None:
+            self._pending_timer.cancel()
+            self._pending_timer = None
 
         self._publish_status(
             "goal pose received: (%.2f, %.2f) in %s — sending to Nav2"

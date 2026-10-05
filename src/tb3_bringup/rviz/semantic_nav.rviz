@@ -6,6 +6,21 @@ Panels:
 Visualization Manager:
   Class: ""
   Displays:
+    - Class: rviz_default_plugins/Image
+      Name: LocateAnything Selected Box
+      Enabled: true
+      Topic:
+        Value: /locateanything/debug_image
+        Reliability Policy: Reliable
+        Durability Policy: Transient Local
+      Normalize Range: true
+    - Class: rviz_default_plugins/Marker
+      Name: LocateAnything Target
+      Enabled: true
+      Topic:
+        Value: /locateanything/target_marker
+        Reliability Policy: Reliable
+        Durability Policy: Transient Local
     - Class: rviz_default_plugins/Grid
       Name: Grid
       Enabled: true

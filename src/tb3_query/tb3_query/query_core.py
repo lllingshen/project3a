@@ -268,6 +268,8 @@ def select_target(
     detector_label: str,
     query_text: str,
     desired_index: Optional[int] = None,
+    robot_x: float = 0.0,
+    robot_y: float = 0.0,
 ) -> QueryResult:
     """Select the best memory object matching the given detector_label.
 
@@ -282,10 +284,9 @@ def select_target(
       available.
 
     * **Default** (`desired_index is None`): nearest-first selection.
-      Picks the candidate with smallest Euclidean distance to the output
-      frame origin (which is `base_link` by default, i.e. the robot
-      itself), with confidence as the tiebreaker. This matches the user
-      intuition "go to the person" → the closest one.
+      Picks the candidate nearest to (robot_x, robot_y), expressed in the
+      same frame as the objects, with confidence as the tiebreaker. The
+      defaults retain the robot-at-origin case for body-frame callers.
     """
     candidates = [o for o in objects if o.detector_label == detector_label]
 
@@ -325,7 +326,7 @@ def select_target(
             confidence=match.confidence,
             status_message=(
                 f"matched {match.object_id} by index "
-                f"(d={math.hypot(match.x, match.y):.2f}m, "
+                f"(d={math.hypot(match.x - robot_x, match.y - robot_y):.2f}m, "
                 f"{len(candidates)} candidate(s))"
             ),
         )
@@ -333,7 +334,8 @@ def select_target(
     # ── Default: nearest-first ───────────────────────────────────────────
     # `min` by (distance, -confidence): smaller distance wins; on ties
     # a higher confidence wins.
-    best = min(candidates, key=lambda o: (math.hypot(o.x, o.y), -o.confidence))
+    best = min(candidates, key=lambda o: (
+        math.hypot(o.x - robot_x, o.y - robot_y), -o.confidence))
 
     return QueryResult(
         success=True,
@@ -346,7 +348,7 @@ def select_target(
         confidence=best.confidence,
         status_message=(
             f"matched {best.object_id} nearest "
-            f"(d={math.hypot(best.x, best.y):.2f}m, "
+            f"(d={math.hypot(best.x - robot_x, best.y - robot_y):.2f}m, "
             f"n={best.confidence:.0f}, "
             f"{len(candidates)} candidate(s))"
         ),

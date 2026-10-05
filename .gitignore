@@ -21,3 +21,15 @@ reports/
 *~
 .DS_Store
 Thumbs.db
+
+# Project 3 local runtime and downloaded dependencies
+.runtime/
+.venv/
+.pytest_cache/
+.tools/
+*.bag
+*.db3
+*.mp4
+report/*.aux
+report/*.log
+report/*.out

@@ -12,6 +12,7 @@
 
 #include <mutex>
 #include <atomic>
+#include <cstdint>
 #include <cmath>
 #include <algorithm>
 #include <limits>
@@ -188,6 +189,19 @@ public:
       "exploration_enabled", rclcpp::QoS(10),
       [this](const std_msgs::msg::Bool::SharedPtr msg) {
         exploration_enabled_ = msg->data;
+        if (!exploration_enabled_) {
+          // The coordinator cannot cancel this client's action handle.
+          // Invalidate pending acceptance/results as well as an active goal.
+          ++goal_generation_;
+          auto handle = current_goal_handle_;
+          current_goal_handle_.reset();
+          goal_sent_time_.reset();
+          state_ = State::IDLE;
+          if (handle) {
+            nav_client_->async_cancel_goal(handle);
+            RCLCPP_INFO(get_logger(), "[exploration] Canceling owned goal on pause");
+          }
+        }
         RCLCPP_INFO(get_logger(), "[exploration] %s via /exploration_enabled",
           exploration_enabled_ ? "ENABLED" : "DISABLED");
       });
@@ -478,6 +492,9 @@ private:
    */
   void timerCallback()
   {
+    if (!exploration_enabled_) {
+      return;
+    }
     const double goal_timeout = get_parameter("goal_timeout").as_double();
 
     if (state_ == State::NAVIGATING) {
@@ -487,6 +504,7 @@ private:
           RCLCPP_WARN(get_logger(), "[timeout] Goal stalled for %.1fs (limit %.1fs), canceling",
             elapsed, goal_timeout);
           auto handle = current_goal_handle_;
+          ++goal_generation_;
           current_goal_handle_.reset();
           goal_sent_time_.reset();
           recordFailedGoal(current_goal_x_, current_goal_y_);
@@ -496,10 +514,6 @@ private:
           }
         }
       }
-      return;
-    }
-
-    if (!exploration_enabled_) {
       return;
     }
 
@@ -727,6 +741,7 @@ private:
    */
   void dispatchNavGoal(double gx, double gy, const std::string & frame_id, const char * source)
   {
+    if (!exploration_enabled_) return;
     // Reset stalemate counter on any successful dispatch (regardless of
     // path). The counter only ticks up when timerCallback reaches its
     // tail without dispatching, so this is the single canonical place
@@ -749,7 +764,15 @@ private:
 
     auto send_opts = rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
     const std::string source_tag(source);
-    send_opts.goal_response_callback = [this, source_tag](typename GoalHandle::SharedPtr gh) {
+    const auto generation = ++goal_generation_;
+    send_opts.goal_response_callback = [this, source_tag, generation](typename GoalHandle::SharedPtr gh) {
+      if (generation != goal_generation_ || !exploration_enabled_) {
+        if (gh) {
+          nav_client_->async_cancel_goal(gh);
+          RCLCPP_INFO(get_logger(), "[exploration] Canceled late goal acceptance after pause");
+        }
+        return;
+      }
       if (gh) {
         RCLCPP_INFO(get_logger(), "[action] Goal accepted (%s)", source_tag.c_str());
         current_goal_handle_ = gh;
@@ -761,7 +784,8 @@ private:
         state_ = State::IDLE;
       }
     };
-    send_opts.result_callback = [this, source_tag](const GoalHandle::WrappedResult & result) {
+    send_opts.result_callback = [this, source_tag, generation](const GoalHandle::WrappedResult & result) {
+      if (generation != goal_generation_) return;
       current_goal_handle_.reset();
       goal_sent_time_.reset();
       state_ = State::IDLE;
@@ -1069,6 +1093,7 @@ private:
 
   State state_;
   typename GoalHandle::SharedPtr current_goal_handle_;
+  uint64_t goal_generation_{0};
   std::optional<rclcpp::Time> goal_sent_time_;
   double current_goal_x_{0.0};
   double current_goal_y_{0.0};

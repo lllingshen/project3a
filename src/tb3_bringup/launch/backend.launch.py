@@ -27,7 +27,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, LaunchConfigurationEquals
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -48,6 +48,16 @@ def generate_launch_description():
         # This backend only makes sense next to the Gazebo sim, so sim
         # time defaults to true here (unlike the per-package launches).
         DeclareLaunchArgument("use_sim_time", default_value="true"),
+        DeclareLaunchArgument("mode", default_value="baseline",
+                              choices=["baseline", "locateanything"]),
+        DeclareLaunchArgument("worker_python", default_value=os.environ.get(
+            "LOCATEANYTHING_PYTHON", "/home/lingshen/miniforge3/envs/locateanything3b/bin/python")),
+        DeclareLaunchArgument("model_path", default_value=os.environ.get(
+            "LOCATEANYTHING_MODEL", "/home/lingshen/research/locateanything_standalone/models/LocateAnything-3B")),
+        DeclareLaunchArgument("eagle_path", default_value=os.environ.get(
+            "LOCATEANYTHING_EAGLE", "/home/lingshen/research/locateanything_standalone/Eagle")),
+        DeclareLaunchArgument("explore", default_value="true"),
+        DeclareLaunchArgument("evidence_dir", default_value=""),
         DeclareLaunchArgument("use_runtime_debug", default_value="false",
                               description="Also start semantic_runtime_debug_node"),
         DeclareLaunchArgument("map_topic", default_value="/map",
@@ -84,6 +94,7 @@ def generate_launch_description():
             package="tb3_query",
             executable="semantic_query_node.py",
             name="semantic_query_node",
+            condition=LaunchConfigurationEquals("mode", "baseline"),
             output="screen",
             parameters=[
                 PathJoinSubstitution([FindPackageShare("tb3_query"),
@@ -98,6 +109,18 @@ def generate_launch_description():
                      "config", "semantic_targets.yaml"])},
                 {"use_sim_time": use_sim_time},
             ],
+        ),
+        Node(
+            package="tb3_locateanything",
+            executable="locateanything_node",
+            name="locateanything_node",
+            output="screen",
+            condition=LaunchConfigurationEquals("mode", "locateanything"),
+            parameters=[{"use_sim_time": use_sim_time,
+                         "worker_python": LaunchConfiguration("worker_python"),
+                         "model_path": LaunchConfiguration("model_path"),
+                         "evidence_dir": LaunchConfiguration("evidence_dir"),
+                         "eagle_path": LaunchConfiguration("eagle_path")}],
         ),
         Node(
             package="tb3_nav_adapter",
@@ -129,6 +152,7 @@ def generate_launch_description():
             package="tb3_frontier_exploration",
             executable="startup_map_warmup_node.py",
             name="startup_map_warmup_node",
+            condition=IfCondition(LaunchConfiguration("explore")),
             parameters=[{"use_sim_time": use_sim_time}],
             output="screen",
         ),
@@ -136,6 +160,7 @@ def generate_launch_description():
             package="tb3_frontier_exploration",
             executable="frontier_detection_node",
             name="frontier_detection_node",
+            condition=IfCondition(LaunchConfiguration("explore")),
             parameters=[
                 fe_config,
                 {"use_sim_time": use_sim_time},
@@ -156,6 +181,7 @@ def generate_launch_description():
             package="tb3_frontier_exploration",
             executable="goal_assignment_node",
             name="goal_assignment_node",
+            condition=IfCondition(LaunchConfiguration("explore")),
             parameters=[
                 fe_config,
                 {"use_sim_time": use_sim_time},

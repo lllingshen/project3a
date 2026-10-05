@@ -23,20 +23,23 @@ def compute_approach_pose(
     ty: float,
     approach_distance: float = 0.5,
     min_standoff: float = 0.3,
+    robot_x: float = 0.0,
+    robot_y: float = 0.0,
 ) -> Optional[tuple[float, float, float]]:
     """Compute a safe approach (goal_x, goal_y, yaw) from a target position.
 
-    The target is assumed to be in the robot body frame (base_link),
-    where the robot is at the origin facing +X.
+    Target and robot coordinates must use the same frame. Defaults cover
+    base_link; map-frame callers must pass the robot's map position.
 
     Returns None if the target is closer than *min_standoff*.
     """
-    dist = math.hypot(tx, ty)
+    dx, dy = tx - robot_x, ty - robot_y
+    dist = math.hypot(dx, dy)
 
     if dist < min_standoff:
         return None
 
-    direction = math.atan2(ty, tx)
+    direction = math.atan2(dy, dx)
 
     actual_offset = min(approach_distance, dist - min_standoff)
 

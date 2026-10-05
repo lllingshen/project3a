@@ -3,7 +3,7 @@
 nav_goal_adapter_node.py — Stage-5 nav goal adapter ROS 2 node.
 
 Subscribes to SemanticQueryResult from Stage 4, computes a safe approach
-pose, optionally transforms it from base_link to map via TF, and publishes
+pose relative to the robot in map coordinates via TF, and publishes
 a PoseStamped suitable for Nav2.
 
 Subscribed topics
@@ -30,6 +30,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 from rclpy.duration import Duration
+from rclpy.time import Time
 
 from geometry_msgs.msg import PoseStamped, PointStamped
 
@@ -102,17 +103,40 @@ class NavGoalAdapterNode(Node):
             )
             return
 
-        tx = msg.position.x
-        ty = msg.position.y
-        source_frame = msg.frame_id or "base_link"
+        source_frame = msg.frame_id or msg.header.frame_id
+        if not source_frame:
+            self.get_logger().warn("Target has no coordinate frame; skipping goal")
+            return
+        # Transform the target before computing its standoff. If it is a
+        # body-frame observation, use the observation timestamp, never now.
+        target = PointStamped()
+        target.header = msg.header
+        target.header.frame_id = source_frame
+        target.point = msg.position
+        try:
+            if source_frame != self._target_frame:
+                target = self._tf_buffer.transform(
+                    target, self._target_frame,
+                    timeout=Duration(seconds=self._tf_timeout))
+            robot_tf = self._tf_buffer.lookup_transform(
+                self._target_frame, "base_link", Time(),
+                timeout=Duration(seconds=self._tf_timeout))
+        except tf2_ros.TransformException as exc:
+            self.get_logger().warn("Target/robot TF unavailable; no goal: %s" % exc)
+            return
+
+        tx, ty = target.point.x, target.point.y
+        rx = robot_tf.transform.translation.x
+        ry = robot_tf.transform.translation.y
 
         result = compute_approach_pose(
-            tx, ty, self._approach_dist, self._min_standoff
+            tx, ty, self._approach_dist, self._min_standoff, rx, ry
         )
 
         if result is None:
             self.get_logger().warn(
-                "Target %s too close (%.2fm), skipping goal" % (msg.object_id, (tx**2 + ty**2)**0.5)
+                "Target %s too close (%.2fm), skipping goal"
+                % (msg.object_id, ((tx-rx)**2 + (ty-ry)**2)**0.5)
             )
             return
 
@@ -121,7 +145,7 @@ class NavGoalAdapterNode(Node):
 
         goal = PoseStamped()
         goal.header.stamp = self.get_clock().now().to_msg()
-        goal.header.frame_id = source_frame
+        goal.header.frame_id = self._target_frame
         goal.pose.position.x = gx
         goal.pose.position.y = gy
         goal.pose.position.z = 0.0
@@ -130,49 +154,12 @@ class NavGoalAdapterNode(Node):
         goal.pose.orientation.z = qz
         goal.pose.orientation.w = qw
 
-        # ── TF transform to target_frame ──────────────────────────────
-        if self._target_frame != source_frame:
-            try:
-                goal = self._tf_buffer.transform(
-                    goal,
-                    self._target_frame,
-                    timeout=Duration(seconds=self._tf_timeout),
-                )
-                self.get_logger().info(
-                    "[%s] %s → approach (%.2f, %.2f) in %s  yaw=%.1f°"
-                    % (
-                        msg.semantic_name,
-                        msg.object_id,
-                        goal.pose.position.x,
-                        goal.pose.position.y,
-                        self._target_frame,
-                        yaw * 57.2958,
-                    )
-                )
-            except (
-                tf2_ros.LookupException,
-                tf2_ros.ConnectivityException,
-                tf2_ros.ExtrapolationException,
-            ) as e:
-                self.get_logger().warn(
-                    "TF %s→%s unavailable (%s), publishing in %s"
-                    % (source_frame, self._target_frame, e, source_frame)
-                )
-        else:
-            self.get_logger().info(
-                "[%s] %s → approach (%.2f, %.2f) in %s  yaw=%.1f°"
-                % (
-                    msg.semantic_name,
-                    msg.object_id,
-                    gx, gy,
-                    source_frame,
-                    yaw * 57.2958,
-                )
-            )
+        self.get_logger().info(
+            "[%s] %s → approach (%.2f, %.2f) in %s  yaw=%.1f°"
+            % (msg.semantic_name, msg.object_id, gx, gy,
+               self._target_frame, yaw * 57.2958))
 
         self._goal_pub.publish(goal)
-
-        # TODO: optionally call NavigateToPose action client here
 
 
 def main(args=None):

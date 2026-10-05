@@ -1,0 +1,9 @@
+# VisitorChair mesh by Wan Yi Seow / Open Robotics, CC BY 4.0.
+# Project 3 material-only recoloring; original geometry retained.
+newmtl VisitorChair
+Ka 0.03 0.12 0.85
+Kd 0.03 0.12 0.85
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 1

@@ -1,0 +1,1159 @@
+{
+  "report_status": "FINAL: measured outcomes and limitations documented; unaided chair baseline criterion remains unmet",
+  "generated_utc": "2026-10-05T03:30:03.895443+00:00",
+  "sources": {
+    "course_repository": "https://github.com/YiyuchenHu/turtlebot3-gazebo-navigation-hw",
+    "course_commit": "a048d1e50e185d62cd32151e2437fab394186e06",
+    "research_repository": "https://github.com/lllingshen/turtlebot3-semantic-research",
+    "research_commit": "694fff69d87852d592be99f39f0ca77c9b04b610",
+    "eagle_repository": "https://github.com/NVlabs/Eagle",
+    "eagle_commit": "8442db3b79f7fd2357e468e6eecdd9b6a82049ff"
+  },
+  "environment": {
+    "os": "Ubuntu 22.04",
+    "ros": "ROS 2 Humble",
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "torch": "2.7.1+cu128",
+    "ultralytics": "8.4.60",
+    "numpy": "1.26.4",
+    "model": "nvidia/LocateAnything-3B"
+  },
+  "measurement": {
+    "arrival_criterion_m": 1.2,
+    "final_distance": "Planar robot world position to intended Gazebo model origin after terminal status, before exploration resumes",
+    "localization_error": "Planar selected map point transformed to world by terminal robot TF/Gazebo pose alignment, versus model origin; includes surface-to-origin offset",
+    "timing": "Wall-clock seconds; command to first terminal coordinator transition",
+    "gt_usage": "Evaluation only. Grounding and goal generation never use Gazebo object poses.",
+    "study_scope": "Six measured LocateAnything attempts (three pairs) on two color commands. Repeated implementation checks, not a general success-rate benchmark. Main table uses latest pair after cancellation handoff fix with baseline detections/memory active."
+  },
+  "locateanything_attempts": [
+    {
+      "utc": "2026-10-05T03:11:08.294647+00:00",
+      "command": "Move to the red chair.",
+      "mode": "locateanything",
+      "expected_entity": "demo_red_chair",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 8.094917820999854,
+      "selected": {
+        "success": true,
+        "query_text": "Move to the red chair.",
+        "object_id": "locateanything_1",
+        "semantic_name": "locateanything_target",
+        "detector_label": "locateanything_target",
+        "frame": "map",
+        "image_or_query_stamp_sec": 54.975,
+        "x": 0.8423546738890111,
+        "y": 0.7239149865376465,
+        "status": "selected exact visual instance; confidence=1.0 is transport-only"
+      },
+      "matched_entity": "demo_red_chair",
+      "selection_correct": true,
+      "localization_error_m": 0.35273694011333967,
+      "final_distance_m": 1.0909037887792854,
+      "all_final_distances_m": {
+        "demo_red_chair": 1.0909037887792854,
+        "demo_blue_chair": 1.6107481107774113
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_NAV] goal pose received: (0.37, 0.56) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ],
+      "model_evidence": {
+        "state": "selected",
+        "mode": "locateanything",
+        "request_id": 1,
+        "command": "Move to the red chair.",
+        "image_stamp_ns": 54975000000,
+        "image_frame": "camera_rgb_optical_frame",
+        "scan_stamp_ns": 54977000000,
+        "scan_frame": "base_scan",
+        "camera_info_stamp_ns": 54975000000,
+        "optical_frame": "camera_rgb_optical_frame",
+        "scan_to_map_translation": {
+          "x": -1.2657142851314367,
+          "y": -3.7550245686510306e-06,
+          "z": 0.13200056278683064
+        },
+        "scan_to_map_quaternion": {
+          "x": 2.609472849292446e-06,
+          "y": 5.430308707861634e-06,
+          "z": 3.6962236963124154e-05,
+          "w": 0.9999999992987477
+        },
+        "bearing_rad": 0.33071244108431713,
+        "range_m": 2.2289040088653564,
+        "scan_index": 19,
+        "valid_scan_rays": 5,
+        "answer": "<ref>the red chair</ref><box><62><21><372><548></box><|im_end|>",
+        "prompt": "Locate a single instance that matches the following description: the red chair.",
+        "box_xyxy": [
+          39.68,
+          10.08,
+          238.08,
+          263.04
+        ],
+        "target_map": {
+          "x": 0.8423546738890111,
+          "y": 0.7239149865376465,
+          "z": 0.13198144525173577
+        },
+        "object_id": "locateanything_1",
+        "inference_seconds": 0.5343821950000347,
+        "result_age_sec": 0.725,
+        "confidence_kind": "transport_placeholder_not_model_confidence",
+        "evidence_session": "locate-evidence"
+      },
+      "attempt_group": "initial_demo_pair",
+      "source_record": ".runtime/locate_attempts.json"
+    },
+    {
+      "utc": "2026-10-05T03:11:52.239268+00:00",
+      "command": "Move to the blue chair.",
+      "mode": "locateanything",
+      "expected_entity": "demo_blue_chair",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 6.987590877999992,
+      "selected": {
+        "success": true,
+        "query_text": "Move to the blue chair.",
+        "object_id": "locateanything_2",
+        "semantic_name": "locateanything_target",
+        "detector_label": "locateanything_target",
+        "frame": "map",
+        "image_or_query_stamp_sec": 98.993,
+        "x": 0.784131563181786,
+        "y": -0.6926190523583192,
+        "status": "selected exact visual instance; confidence=1.0 is transport-only"
+      },
+      "matched_entity": "demo_blue_chair",
+      "selection_correct": true,
+      "localization_error_m": 0.4186123220564868,
+      "final_distance_m": 1.1570034872756434,
+      "all_final_distances_m": {
+        "demo_red_chair": 1.6358956780821936,
+        "demo_blue_chair": 1.1570034872756434
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_NAV] goal pose received: (0.31, -0.53) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ],
+      "model_evidence": {
+        "state": "selected",
+        "mode": "locateanything",
+        "request_id": 2,
+        "command": "Move to the blue chair.",
+        "image_stamp_ns": 98993000000,
+        "image_frame": "camera_rgb_optical_frame",
+        "scan_stamp_ns": 98979000000,
+        "scan_frame": "base_scan",
+        "camera_info_stamp_ns": 98993000000,
+        "optical_frame": "camera_rgb_optical_frame",
+        "scan_to_map_translation": {
+          "x": -1.2645876750461706,
+          "y": 0.003186403362873,
+          "z": 0.13221999542597807
+        },
+        "scan_to_map_quaternion": {
+          "x": -1.6846967990902906e-06,
+          "y": 0.0028504513962428735,
+          "z": 1.4828672982871076e-05,
+          "w": 0.9999959373438023
+        },
+        "bearing_rad": -0.3274310471712093,
+        "range_m": 2.163684844970703,
+        "scan_index": 340,
+        "valid_scan_rays": 5,
+        "answer": "<ref>the blue chair</ref><box><605><21><961><550></box><|im_end|>",
+        "prompt": "Locate a single instance that matches the following description: the blue chair.",
+        "box_xyxy": [
+          387.2,
+          10.08,
+          615.04,
+          264.0
+        ],
+        "target_map": {
+          "x": 0.784131563181786,
+          "y": -0.6926190523583192,
+          "z": 0.12054270724849792
+        },
+        "object_id": "locateanything_2",
+        "inference_seconds": 0.15199574999996912,
+        "result_age_sec": 0.307,
+        "confidence_kind": "transport_placeholder_not_model_confidence",
+        "evidence_session": "locate-evidence"
+      },
+      "attempt_group": "initial_demo_pair",
+      "source_record": ".runtime/locate_attempts.json"
+    },
+    {
+      "utc": "2026-10-05T03:15:39.213339+00:00",
+      "command": "Move to the red chair.",
+      "mode": "locateanything",
+      "expected_entity": "demo_red_chair",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 8.142023805999997,
+      "selected": {
+        "success": true,
+        "query_text": "Move to the red chair.",
+        "object_id": "locateanything_1",
+        "semantic_name": "locateanything_target",
+        "detector_label": "locateanything_target",
+        "frame": "map",
+        "image_or_query_stamp_sec": 325.594,
+        "x": 0.8501840987218545,
+        "y": 0.7224279932290203,
+        "status": "selected exact visual instance; confidence=1.0 is transport-only"
+      },
+      "matched_entity": "demo_red_chair",
+      "selection_correct": true,
+      "localization_error_m": 0.3440753588600666,
+      "final_distance_m": 1.0854574771560608,
+      "all_final_distances_m": {
+        "demo_red_chair": 1.0854574771560608,
+        "demo_blue_chair": 1.6157802866460527
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_NAV] goal pose received: (0.38, 0.56) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ],
+      "model_evidence": {
+        "state": "selected",
+        "mode": "locateanything",
+        "request_id": 1,
+        "command": "Move to the red chair.",
+        "image_stamp_ns": 325594000000,
+        "image_frame": "camera_rgb_optical_frame",
+        "scan_stamp_ns": 325579000000,
+        "scan_frame": "base_scan",
+        "camera_info_stamp_ns": 325594000000,
+        "optical_frame": "camera_rgb_optical_frame",
+        "scan_to_map_translation": {
+          "x": -1.2687445133873558,
+          "y": -0.000512696617127412,
+          "z": 0.13208285009875825
+        },
+        "scan_to_map_quaternion": {
+          "x": -1.1908632735567649e-05,
+          "y": 0.0017098898488011023,
+          "z": 0.00012285347059235032,
+          "w": 0.9999985305198774
+        },
+        "bearing_rad": 0.3285503470165668,
+        "range_m": 2.2388734817504883,
+        "scan_index": 19,
+        "valid_scan_rays": 5,
+        "answer": "<ref>the red chair</ref><box><66><25><372><548></box><|im_end|>",
+        "prompt": "Locate a single instance that matches the following description: the red chair.",
+        "box_xyxy": [
+          42.24,
+          12.0,
+          238.08,
+          263.04
+        ],
+        "target_map": {
+          "x": 0.8501840987218545,
+          "y": 0.7224279932290203,
+          "z": 0.124819033246458
+        },
+        "object_id": "locateanything_1",
+        "inference_seconds": 0.5007709400006206,
+        "result_age_sec": 0.706,
+        "confidence_kind": "transport_placeholder_not_model_confidence",
+        "evidence_session": "locate-evidence-v2"
+      },
+      "attempt_group": "continuous_baseline_perception_pair",
+      "source_record": ".runtime/locate_attempts.json"
+    },
+    {
+      "utc": "2026-10-05T03:17:02.021237+00:00",
+      "command": "Move to the blue chair.",
+      "mode": "locateanything",
+      "expected_entity": "demo_blue_chair",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 7.052310725000098,
+      "selected": {
+        "success": true,
+        "query_text": "Move to the blue chair.",
+        "object_id": "locateanything_2",
+        "semantic_name": "locateanything_target",
+        "detector_label": "locateanything_target",
+        "frame": "map",
+        "image_or_query_stamp_sec": 408.38,
+        "x": 0.7927327219901665,
+        "y": -0.7014946198371645,
+        "status": "selected exact visual instance; confidence=1.0 is transport-only"
+      },
+      "matched_entity": "demo_blue_chair",
+      "selection_correct": true,
+      "localization_error_m": 0.4101400722570813,
+      "final_distance_m": 1.1447794449377573,
+      "all_final_distances_m": {
+        "demo_red_chair": 1.6350182804947473,
+        "demo_blue_chair": 1.1447794449377573
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_NAV] goal pose received: (0.32, -0.54) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ],
+      "model_evidence": {
+        "state": "selected",
+        "mode": "locateanything",
+        "request_id": 2,
+        "command": "Move to the blue chair.",
+        "image_stamp_ns": 408380000000,
+        "image_frame": "camera_rgb_optical_frame",
+        "scan_stamp_ns": 408379000000,
+        "scan_frame": "base_scan",
+        "camera_info_stamp_ns": 408380000000,
+        "optical_frame": "camera_rgb_optical_frame",
+        "scan_to_map_translation": {
+          "x": -1.261895049229058,
+          "y": -0.0036537676244832377,
+          "z": 0.13224000344091627
+        },
+        "scan_to_map_quaternion": {
+          "x": -2.540623667031744e-07,
+          "y": 0.00276763222545256,
+          "z": 8.425280532746516e-06,
+          "w": 0.9999961700630732
+        },
+        "bearing_rad": -0.3274310471712094,
+        "range_m": 2.1699323654174805,
+        "scan_index": 340,
+        "valid_scan_rays": 5,
+        "answer": "<ref>the blue chair</ref><box><605><21><961><550></box><|im_end|>",
+        "prompt": "Locate a single instance that matches the following description: the blue chair.",
+        "box_xyxy": [
+          387.2,
+          10.08,
+          615.04,
+          264.0
+        ],
+        "target_map": {
+          "x": 0.7927327219901665,
+          "y": -0.7014946198371645,
+          "z": 0.12086735185460949
+        },
+        "object_id": "locateanything_2",
+        "inference_seconds": 0.1515520650000326,
+        "result_age_sec": 0.32,
+        "confidence_kind": "transport_placeholder_not_model_confidence",
+        "evidence_session": "locate-evidence-v2"
+      },
+      "attempt_group": "continuous_baseline_perception_pair",
+      "source_record": ".runtime/locate_attempts.json"
+    },
+    {
+      "utc": "2026-10-05T03:23:59.347238+00:00",
+      "command": "Move to the red chair.",
+      "mode": "locateanything",
+      "expected_entity": "demo_red_chair",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 8.078787168999952,
+      "selected": {
+        "success": true,
+        "query_text": "Move to the red chair.",
+        "object_id": "locateanything_3",
+        "semantic_name": "locateanything_target",
+        "detector_label": "locateanything_target",
+        "frame": "map",
+        "image_or_query_stamp_sec": 825.673,
+        "x": 0.8575980242370778,
+        "y": 0.7267666132213991,
+        "status": "selected exact visual instance; confidence=1.0 is transport-only"
+      },
+      "matched_entity": "demo_red_chair",
+      "selection_correct": true,
+      "localization_error_m": 0.33934365257632504,
+      "final_distance_m": 1.080100940622218,
+      "all_final_distances_m": {
+        "demo_red_chair": 1.080100940622218,
+        "demo_blue_chair": 1.622635030415959
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle",
+        "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'Move to the red chair.'",
+        "[SEMANTIC_NAV] goal pose received: (0.39, 0.56) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ],
+      "model_evidence": {
+        "state": "selected",
+        "mode": "locateanything",
+        "request_id": 3,
+        "command": "Move to the red chair.",
+        "image_stamp_ns": 825673000000,
+        "image_frame": "camera_rgb_optical_frame",
+        "scan_stamp_ns": 825579000000,
+        "scan_frame": "base_scan",
+        "camera_info_stamp_ns": 825673000000,
+        "optical_frame": "camera_rgb_optical_frame",
+        "scan_to_map_translation": {
+          "x": -1.263504108501541,
+          "y": -0.0004414519358141051,
+          "z": 0.13209582942142567
+        },
+        "scan_to_map_quaternion": {
+          "x": -0.00016986703365416602,
+          "y": 0.0016718119402634166,
+          "z": 5.631519105539555e-05,
+          "w": 0.9999985865083143
+        },
+        "bearing_rad": 0.3301721058804731,
+        "range_m": 2.2423112392425537,
+        "scan_index": 19,
+        "valid_scan_rays": 5,
+        "answer": "<ref>the red chair</ref><box><63><23><372><548></box><|im_end|>",
+        "prompt": "Locate a single instance that matches the following description: the red chair.",
+        "box_xyxy": [
+          40.32,
+          11.04,
+          238.08,
+          263.04
+        ],
+        "target_map": {
+          "x": 0.8575980242370778,
+          "y": 0.7267666132213991,
+          "z": 0.12475647689803136
+        },
+        "object_id": "locateanything_3",
+        "inference_seconds": 0.16796901399993658,
+        "result_age_sec": 0.327,
+        "confidence_kind": "transport_placeholder_not_model_confidence",
+        "evidence_session": "locate-evidence-v2"
+      },
+      "attempt_group": "final_cancellation_handoff_pair",
+      "source_record": ".runtime/locate_attempts.json"
+    },
+    {
+      "utc": "2026-10-05T03:25:09.312731+00:00",
+      "command": "Move to the blue chair.",
+      "mode": "locateanything",
+      "expected_entity": "demo_blue_chair",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 7.405076049999479,
+      "selected": {
+        "success": true,
+        "query_text": "Move to the blue chair.",
+        "object_id": "locateanything_4",
+        "semantic_name": "locateanything_target",
+        "detector_label": "locateanything_target",
+        "frame": "map",
+        "image_or_query_stamp_sec": 895.589,
+        "x": 0.7756879457443993,
+        "y": -0.6910884943750529,
+        "status": "selected exact visual instance; confidence=1.0 is transport-only"
+      },
+      "matched_entity": "demo_blue_chair",
+      "selection_correct": true,
+      "localization_error_m": 0.4336018578990063,
+      "final_distance_m": 1.170088058499872,
+      "all_final_distances_m": {
+        "demo_red_chair": 1.6479880050061044,
+        "demo_blue_chair": 1.170088058499872
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle",
+        "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'Move to the blue chair.'",
+        "[SEMANTIC_NAV] goal pose received: (0.30, -0.53) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ],
+      "model_evidence": {
+        "state": "selected",
+        "mode": "locateanything",
+        "request_id": 4,
+        "command": "Move to the blue chair.",
+        "image_stamp_ns": 895589000000,
+        "image_frame": "camera_rgb_optical_frame",
+        "scan_stamp_ns": 895579000000,
+        "scan_frame": "base_scan",
+        "camera_info_stamp_ns": 895589000000,
+        "optical_frame": "camera_rgb_optical_frame",
+        "scan_to_map_translation": {
+          "x": -1.2613348594961291,
+          "y": -0.0004841132690449633,
+          "z": 0.13224185128005053
+        },
+        "scan_to_map_quaternion": {
+          "x": -5.269092412696023e-06,
+          "y": 0.0027660024370860397,
+          "z": 1.4754193663379217e-05,
+          "w": 0.9999961744852169
+        },
+        "bearing_rad": -0.3268903100568266,
+        "range_m": 2.150935411453247,
+        "scan_index": 340,
+        "valid_scan_rays": 5,
+        "answer": "<ref>the blue chair</ref><box><604><21><961><550></box><|im_end|>",
+        "prompt": "Locate a single instance that matches the following description: the blue chair.",
+        "box_xyxy": [
+          386.56,
+          10.08,
+          615.04,
+          264.0
+        ],
+        "target_map": {
+          "x": 0.7756879457443993,
+          "y": -0.6910884943750529,
+          "z": 0.12098023635383963
+        },
+        "object_id": "locateanything_4",
+        "inference_seconds": 0.1841471730003832,
+        "result_age_sec": 0.411,
+        "confidence_kind": "transport_placeholder_not_model_confidence",
+        "evidence_session": "locate-evidence-v2"
+      },
+      "attempt_group": "final_cancellation_handoff_pair",
+      "source_record": ".runtime/locate_attempts.json"
+    }
+  ],
+  "baseline_attempts": [
+    {
+      "utc": "2026-10-05T03:12:13.264951+00:00",
+      "command": "go to person",
+      "mode": "baseline",
+      "expected_entity": null,
+      "expected_id": null,
+      "errors": [
+        "Gazebo pose query failed; no fallback used"
+      ],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 4.1860971859996425,
+      "selected": {
+        "success": true,
+        "query_text": "go to person",
+        "object_id": "person_2",
+        "semantic_name": "person",
+        "detector_label": "person",
+        "frame": "map",
+        "image_or_query_stamp_sec": 91.5,
+        "x": -2.0004819694901084,
+        "y": 1.9192220176349162,
+        "status": "matched person_2 nearest (d=1.12m, n=16, 3 candidate(s))",
+        "nearest_id_at_selection": "person_2"
+      },
+      "exploration_resumed": true,
+      "pass": false,
+      "supplemental_evaluation": {
+        "note": "Original null GT queries and failed verdict preserved. NW/SE static props re-queried successfully using actual gz model output in the same ongoing simulation after exploration resumed. Original terminal robot pose retained.",
+        "truth_world": {
+          "person_corner_ne": {
+            "x": 1.99999,
+            "y": 1.99999,
+            "yaw": -2.3563
+          },
+          "person_corner_nw": {
+            "x": -1.99999,
+            "y": 1.99999,
+            "yaw": -0.785496
+          },
+          "person_corner_sw": {
+            "x": -1.99999,
+            "y": -1.99999,
+            "yaw": 0.785304
+          },
+          "person_corner_se": {
+            "x": 1.99999,
+            "y": -1.99999,
+            "yaw": 2.3561
+          },
+          "person_centre": {
+            "x": 1.3e-05,
+            "y": -0.0,
+            "yaw": -0.000134
+          }
+        },
+        "matched_entity": "person_corner_nw",
+        "localization_error_m": 0.08305777743046391,
+        "final_distance_m": 0.7510538043309547,
+        "robot_measurement": "Original at terminal before resume"
+      },
+      "navigation_status_messages": [
+        "[SEMANTIC_NAV] goal pose received: (-1.96, 1.42) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ]
+    },
+    {
+      "utc": "2026-10-05T03:14:12.920466+00:00",
+      "command": "go to person 0",
+      "mode": "baseline",
+      "expected_entity": "person_corner_nw",
+      "expected_id": "person_0",
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 27.99840228499943,
+      "selected": {
+        "success": true,
+        "query_text": "go to person 0",
+        "object_id": "person_0",
+        "semantic_name": "person",
+        "detector_label": "person",
+        "frame": "map",
+        "image_or_query_stamp_sec": 211.8,
+        "x": -2.1082729684127854,
+        "y": 2.044222019497562,
+        "status": "matched person_0 by index (d=6.47m, 2 candidate(s))"
+      },
+      "matched_entity": "person_corner_nw",
+      "selection_correct": true,
+      "localization_error_m": 0.11719775585918281,
+      "final_distance_m": 0.6716896987448892,
+      "all_final_distances_m": {
+        "person_corner_ne": 3.6588826668533656,
+        "person_corner_nw": 0.6716896987448892,
+        "person_corner_sw": 3.469349957124533,
+        "person_corner_se": 4.997263695603825,
+        "person_centre": 2.170720569398328
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_NAV] goal pose received: (-1.76, 1.69) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ]
+    },
+    {
+      "utc": "2026-10-05T03:14:59.164422+00:00",
+      "command": "go to person 1",
+      "mode": "baseline",
+      "expected_entity": "person_corner_se",
+      "expected_id": "person_1",
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 9.4080932020006,
+      "selected": {
+        "success": true,
+        "query_text": "go to person 1",
+        "object_id": "person_1",
+        "semantic_name": "person",
+        "detector_label": "person",
+        "frame": "map",
+        "image_or_query_stamp_sec": 257.3,
+        "x": 2.10416128898438,
+        "y": -2.0057907779428943,
+        "status": "matched person_1 by index (d=2.93m, 4 candidate(s))",
+        "nearest_id_at_selection": "person_3"
+      },
+      "matched_entity": "person_corner_se",
+      "selection_correct": true,
+      "localization_error_m": 0.11159172056395303,
+      "final_distance_m": 0.6877589741326535,
+      "all_final_distances_m": {
+        "person_corner_ne": 3.343375372359496,
+        "person_corner_nw": 5.067718062609639,
+        "person_corner_sw": 3.869963809662824,
+        "person_corner_se": 0.6877589741326535,
+        "person_centre": 2.2533136149477726
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_NAV] goal pose received: (1.89, -1.55) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ]
+    },
+    {
+      "utc": "2026-10-05T03:15:30.332296+00:00",
+      "command": "go to person",
+      "mode": "baseline",
+      "expected_entity": null,
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 4.4354826710005,
+      "selected": {
+        "success": true,
+        "query_text": "go to person",
+        "object_id": "person_4",
+        "semantic_name": "person",
+        "detector_label": "person",
+        "frame": "map",
+        "image_or_query_stamp_sec": 288.4,
+        "x": -0.03763403060524574,
+        "y": -0.009502284763508355,
+        "status": "matched person_4 nearest (d=0.97m, n=14, 5 candidate(s))",
+        "nearest_id_at_selection": "person_4"
+      },
+      "matched_entity": "person_centre",
+      "selection_correct": true,
+      "localization_error_m": 0.03240551082050228,
+      "final_distance_m": 0.7020559405695531,
+      "all_final_distances_m": {
+        "person_corner_ne": 3.1478949976929025,
+        "person_corner_nw": 3.4932894880470466,
+        "person_corner_sw": 2.660146063828075,
+        "person_corner_se": 2.1869038730817594,
+        "person_centre": 0.7020559405695531
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_NAV] goal pose received: (0.09, -0.49) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ]
+    },
+    {
+      "utc": "2026-10-05T03:17:32.504353+00:00",
+      "command": "go to trash can",
+      "mode": "baseline",
+      "expected_entity": "semantic_trash_can",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 0.6150722769998538,
+      "selected": {
+        "success": true,
+        "query_text": "go to trash can",
+        "object_id": "trash_can_1",
+        "semantic_name": "trash_can",
+        "detector_label": "trash_can",
+        "frame": "map",
+        "image_or_query_stamp_sec": 94.4,
+        "x": -1.1876100249587946,
+        "y": 2.0493314980912105,
+        "status": "matched trash_can_1 nearest (d=0.75m, n=14, 2 candidate(s))",
+        "nearest_id_at_selection": "trash_can_1"
+      },
+      "matched_entity": "semantic_chair",
+      "selection_correct": false,
+      "localization_error_m": 1.9559627961011714,
+      "final_distance_m": 2.0955350133626975,
+      "all_final_distances_m": {
+        "semantic_person": 4.1369372236267985,
+        "semantic_trash_can": 2.0955350133626975,
+        "semantic_chair": 0.979964178171835
+      },
+      "arrival_pass": false,
+      "localization_pass": false,
+      "exploration_resumed": true,
+      "pass": false,
+      "navigation_status_messages": [
+        "[SEMANTIC_NAV] goal pose received: (-1.32, 1.62) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ]
+    },
+    {
+      "utc": "2026-10-05T03:18:36.466526+00:00",
+      "command": "go to trash can",
+      "mode": "baseline",
+      "expected_entity": "semantic_trash_can",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_FAILED] SEMANTIC_NAV \u2192 TARGET_FAILED",
+      "terminal_elapsed_s": 0.024310474999765574,
+      "selected": {
+        "success": true,
+        "query_text": "go to trash can",
+        "object_id": "trash_can_0",
+        "semantic_name": "trash_can",
+        "detector_label": "trash_can",
+        "frame": "map",
+        "image_or_query_stamp_sec": 158.4,
+        "x": 0.6167190062568071,
+        "y": 1.4260178828131742,
+        "status": "matched trash_can_0 nearest (d=1.97m, n=33, 2 candidate(s))",
+        "nearest_id_at_selection": "trash_can_0"
+      },
+      "matched_entity": "semantic_trash_can",
+      "selection_correct": true,
+      "localization_error_m": 0.5519608221414476,
+      "final_distance_m": 2.090315026242695,
+      "all_final_distances_m": {
+        "semantic_person": 1.6617497130843746,
+        "semantic_trash_can": 2.090315026242695,
+        "semantic_chair": 3.3824693098428846
+      },
+      "arrival_pass": false,
+      "localization_pass": false,
+      "exploration_resumed": true,
+      "pass": false,
+      "navigation_status_messages": [
+        "[SEMANTIC_NAV] goal pose received: (0.55, 0.93) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_FAILED] Nav2 goal failed (status=6)"
+      ]
+    },
+    {
+      "utc": "2026-10-05T03:23:56.439892+00:00",
+      "command": "go to trash can",
+      "mode": "baseline",
+      "expected_entity": "semantic_trash_can",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 2.3398614810002982,
+      "selected": {
+        "success": true,
+        "query_text": "go to trash can",
+        "object_id": "trash_can_0",
+        "semantic_name": "trash_can",
+        "detector_label": "trash_can",
+        "frame": "map",
+        "image_or_query_stamp_sec": 479.5,
+        "x": 0.6638380914118484,
+        "y": 1.4748120578936377,
+        "status": "matched trash_can_0 nearest (d=1.02m, n=101, 2 candidate(s))",
+        "nearest_id_at_selection": "trash_can_0"
+      },
+      "matched_entity": "semantic_trash_can",
+      "selection_correct": true,
+      "localization_error_m": 0.07459041151917539,
+      "final_distance_m": 0.7259506412367166,
+      "all_final_distances_m": {
+        "semantic_person": 3.02346799776548,
+        "semantic_trash_can": 0.7259506412367166,
+        "semantic_chair": 2.729184947239194
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle",
+        "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'go to trash can'",
+        "[SEMANTIC_NAV] goal pose received: (0.76, 0.98) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ]
+    },
+    {
+      "utc": "2026-10-05T03:26:43.512052+00:00",
+      "command": "go to chair",
+      "mode": "baseline",
+      "expected_entity": "semantic_chair",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_FAILED] SEMANTIC_QUERYING \u2192 TARGET_FAILED",
+      "terminal_elapsed_s": 0.4321897230001923,
+      "selected": {
+        "success": false,
+        "query_text": "go to chair",
+        "object_id": "",
+        "semantic_name": "chair",
+        "detector_label": "chair",
+        "frame": "map",
+        "image_or_query_stamp_sec": 645.5,
+        "x": 0.0,
+        "y": 0.0,
+        "status": "no active chair in memory"
+      },
+      "exploration_resumed": true,
+      "pass": false,
+      "navigation_status_messages": [
+        "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle",
+        "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'go to chair'",
+        "[TARGET_FAILED] query failed: no active chair in memory"
+      ]
+    },
+    {
+      "utc": "2026-10-05T03:27:30.786415+00:00",
+      "command": "go to trash can 0",
+      "mode": "baseline",
+      "expected_entity": "semantic_trash_can",
+      "expected_id": "trash_can_0",
+      "note": "Operator-assisted chair-view setup: reposition through an existing observed semantic landmark; not an additional unaided acceptance check.",
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 15.331751102000453,
+      "selected": {
+        "success": true,
+        "query_text": "go to trash can 0",
+        "object_id": "trash_can_0",
+        "semantic_name": "trash_can",
+        "detector_label": "trash_can",
+        "frame": "map",
+        "image_or_query_stamp_sec": 692.8,
+        "x": 0.664688917840325,
+        "y": 1.4750698773673183,
+        "status": "matched trash_can_0 by index (d=4.29m, 2 candidate(s))",
+        "nearest_id_at_selection": "trash_can_0"
+      },
+      "matched_entity": "semantic_trash_can",
+      "selection_correct": true,
+      "localization_error_m": 0.027559643251951236,
+      "final_distance_m": 0.7685948257437074,
+      "all_final_distances_m": {
+        "semantic_person": 3.036505558394386,
+        "semantic_trash_can": 0.7685948257437074,
+        "semantic_chair": 2.2688985709636733
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle",
+        "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'go to trash can 0'",
+        "[SEMANTIC_NAV] goal pose received: (0.44, 1.03) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ]
+    },
+    {
+      "utc": "2026-10-05T03:28:50.727170+00:00",
+      "command": "go to chair",
+      "mode": "baseline",
+      "expected_entity": "semantic_chair",
+      "expected_id": "chair_0",
+      "note": "Operator-assisted observation: indexed trash_can_0 reposition, camera-guided turn in place,22s stationary chair view. Shipped relabel changed trash_can_1 to chair_0. This does not establish unaided course acceptance.",
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "terminal_elapsed_s": 5.979571310999745,
+      "selected": {
+        "success": true,
+        "query_text": "go to chair",
+        "object_id": "chair_0",
+        "semantic_name": "chair",
+        "detector_label": "chair",
+        "frame": "map",
+        "image_or_query_stamp_sec": 772.7,
+        "x": -1.1667181353413894,
+        "y": 2.186644193990039,
+        "status": "matched chair_0 nearest (d=2.03m, n=103, 1 candidate(s))",
+        "nearest_id_at_selection": "chair_0"
+      },
+      "matched_entity": "semantic_chair",
+      "selection_correct": true,
+      "localization_error_m": 0.2280748852977741,
+      "final_distance_m": 0.9729483765467724,
+      "all_final_distances_m": {
+        "semantic_person": 4.0857713190711005,
+        "semantic_trash_can": 1.3418635071213465,
+        "semantic_chair": 0.9729483765467724
+      },
+      "arrival_pass": true,
+      "localization_pass": true,
+      "exploration_resumed": true,
+      "pass": true,
+      "navigation_status_messages": [
+        "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle",
+        "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'go to chair'",
+        "[SEMANTIC_NAV] goal pose received: (-0.80, 1.85) in map \u2014 sending to Nav2",
+        "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving",
+        "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+      ]
+    }
+  ],
+  "baseline_acceptance_status": "Generic person, two observed indexed IDs, and trash-can measured pass. Unaided chair acceptance failed after600s exploration; operator-assisted observation followed by chair navigation measured pass0.972948m. This does not establish unaided chair acceptance.",
+  "baseline_color_comparison_status": "completed; both queries failed because no chair landmark was available; blue evaluation also recorded unavailable robot map TF",
+  "video_status": "not_recorded; user will record manually",
+  "baseline_color_comparison": [
+    {
+      "utc": "2026-10-05T03:14:22.644050+00:00",
+      "command": "Move to the red chair.",
+      "mode": "baseline",
+      "expected_entity": "demo_red_chair",
+      "errors": [],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_FAILED] SEMANTIC_QUERYING \u2192 TARGET_FAILED",
+      "terminal_elapsed_s": 0.0021344249998946907,
+      "landmarks_before": [
+        {
+          "id": "person_0",
+          "label": "person",
+          "x": 0.8413858461401577,
+          "y": 0.7387919387801889,
+          "frame": "map"
+        }
+      ],
+      "selected": {
+        "success": false,
+        "query_text": "Move to the red chair.",
+        "object_id": "",
+        "semantic_name": "chair",
+        "detector_label": "chair",
+        "frame": "map",
+        "image_or_query_stamp_sec": 248.3,
+        "x": 0.0,
+        "y": 0.0,
+        "status": "no active chair in memory"
+      },
+      "exploration_resumed": true,
+      "pass": false
+    },
+    {
+      "utc": "2026-10-05T03:14:46.534799+00:00",
+      "command": "Move to the blue chair.",
+      "mode": "baseline",
+      "expected_entity": "demo_blue_chair",
+      "errors": [
+        "robot map TF unavailable: \"map\" passed to lookupTransform argument target_frame does not exist. "
+      ],
+      "criterion_m": 1.2,
+      "terminal": "[TARGET_FAILED] SEMANTIC_QUERYING \u2192 TARGET_FAILED",
+      "terminal_elapsed_s": 0.002318405000551138,
+      "landmarks_before": [
+        {
+          "id": "person_0",
+          "label": "person",
+          "x": 0.8413858461401572,
+          "y": 0.7387919387801893,
+          "frame": "map"
+        }
+      ],
+      "selected": {
+        "success": false,
+        "query_text": "Move to the blue chair.",
+        "object_id": "",
+        "semantic_name": "chair",
+        "detector_label": "chair",
+        "frame": "map",
+        "image_or_query_stamp_sec": 272.2,
+        "x": 0.0,
+        "y": 0.0,
+        "status": "no active chair in memory"
+      },
+      "exploration_resumed": true,
+      "pass": false
+    }
+  ],
+  "baseline_color_comparison_interpretation": "Both descriptions parse as chair without color. Actual failure was no active chair in memory; recolored red chair was labeled person. This comparison is confounded by detector behavior on recolored assets and does not isolate parsing.",
+  "checks": {
+    "colcon_build": "All 9 packages passed",
+    "focused_tests": {
+      "passed": 40,
+      "environment": "ROS/install sourced; PYTEST_DISABLE_PLUGIN_AUTOLOAD=1"
+    },
+    "pause_cancellation": "Passed isolated ROS action regression",
+    "cancellation_handoff": "Coordinator waits for Nav2 cancellation acknowledgement, terminal cancellation status, and idle before forwarding new command. Actual post-fix trash-can and latest two LocateAnything runs passed.",
+    "stub_direct_test": {
+      "input_shape": [
+        480,
+        640,
+        3
+      ],
+      "input": "blank image",
+      "observed": "stub warning; is_loaded=False; detections=[]",
+      "full_stub_stack_launched": false
+    },
+    "reset_transport_issue": "A later reset applied at (-1.2,0) but its service response was lost (failed-send-response timeout). Actual Gazebo pose and camera view were checked before continuing. README uses a bounded 15-second call and clean-restart fallback.",
+    "source_preservation": "Research main and Eagle remained at original HEAD with clean git status. Course LICENSE, detector wrapper, weights, detector config, semantic target config and message definitions unchanged; original NOTICE prefix retained."
+  },
+  "figures": {
+    "figures/red-chair.png": {
+      "source": ".runtime/red-handoff-final.png",
+      "description": "Latest red command selected-box image; v2 worker request3"
+    },
+    "figures/blue-chair.png": {
+      "source": ".runtime/blue-handoff-final.png",
+      "description": "Latest blue command selected-box image; v2 worker request4"
+    },
+    "figures/rviz-blue-arrival.png": {
+      "source": ".runtime/rviz-blue-arrival.png",
+      "description": "RViz after second blue run, showing yellow LocateAnything target independent of false baseline person landmark; not a screenshot of the third/latest blue run",
+      "presentation": "Original full screenshot retained; LaTeX crops peripheral UI and enlarges it to0.66linewidth. Caption explicitly says cropped."
+    }
+  },
+  "operator_assisted_chair_observation": {
+    "method": "Operator-assisted pause and camera-guided turn in place; no target coordinates/GT or memory injection",
+    "latest_box": {
+      "cx": 301.9018859863281,
+      "width": 213.79473876953125,
+      "score": 0.9813583493232727
+    },
+    "landmarks": [
+      {
+        "id": "person_0",
+        "label": "person",
+        "x": 0.6011685487285559,
+        "y": -2.1670944733769235
+      },
+      {
+        "id": "trash_can_0",
+        "label": "trash_can",
+        "x": 0.6669198938688892,
+        "y": 1.4756941213210755
+      },
+      {
+        "id": "chair_0",
+        "label": "chair",
+        "x": -1.1776573545747129,
+        "y": 2.1984835547732695
+      }
+    ],
+    "hold_started": true,
+    "elapsed_s": 28.910220309999204,
+    "image": ".runtime/baseline_chair_operator_view.png",
+    "setup_command": "go to trash can 0",
+    "hold_duration_s": 22,
+    "relabel_observed": "trash_can_1 -> chair_0 at chair72 versus trash_can48 observations under unchanged ratio1.5",
+    "unaided_acceptance": false
+  },
+  "baseline_summary": {
+    "generic_person_final_distance_m": 0.7020559405695531,
+    "indexed_person_0_final_distance_m": 0.6716896987448892,
+    "indexed_person_1_final_distance_m": 0.6877589741326535,
+    "trash_can_final_distance_m": 0.7259506412367166,
+    "chair_unaided": "failed: no active chair in memory after600s exploration",
+    "chair_assisted_final_distance_m": 0.9729483765467724,
+    "full_unaided_course_acceptance": false
+  }
+}

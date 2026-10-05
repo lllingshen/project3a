@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="Project3BlueChair">
+    <static>true</static>
+    <link name="body">
+      <visual name="visual">
+        <geometry><mesh><uri>model://Project3BlueChair/meshes/chair.obj</uri></mesh></geometry>
+      </visual>
+      <collision name="collision">
+        <geometry><mesh><uri>model://VisitorChair/meshes/VisitorChair_Col.obj</uri></mesh></geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

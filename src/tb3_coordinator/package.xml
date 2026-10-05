@@ -18,6 +18,7 @@
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>nav2_msgs</depend>
+  <depend>action_msgs</depend>
   <depend>tb3_query</depend>
   <depend>visualization_msgs</depend>
   <depend>vision_msgs</depend>

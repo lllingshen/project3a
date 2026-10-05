@@ -63,6 +63,9 @@ class StartupMapWarmupNode(Node):
         self._phase = self._PH_INIT_WAIT
         self._phase_start = self.get_clock().now()
         self._published_done = False
+        self._exploration_sub = self.create_subscription(
+            Bool, "exploration_enabled", self._exploration_cb, 10
+        )
 
         rate = float(self.get_parameter("timer_rate_hz").get_parameter_value().double_value)
         if rate <= 0.0:
@@ -83,6 +86,14 @@ class StartupMapWarmupNode(Node):
 
     def _phase_elapsed(self) -> float:
         return (self.get_clock().now() - self._phase_start).nanoseconds / 1e9
+
+    def _exploration_cb(self, msg: Bool) -> None:
+        if not msg.data and self._phase != self._PH_DONE:
+            # A user command takes priority over the optional startup scan.
+            # End this one-shot warmup so it cannot resume during navigation.
+            self._send_stop()
+            self.get_logger().info("Warmup stopped early: exploration disabled by coordinator")
+            self._finish()
 
     def _next_phase(self, new_phase: int) -> None:
         self._phase = new_phase

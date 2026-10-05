@@ -32,6 +32,8 @@ import os
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+from rclpy.time import Time
+import tf2_ros
 
 from std_msgs.msg import String
 from vision_msgs.msg import Detection3DArray
@@ -81,6 +83,8 @@ class SemanticQueryNode(Node):
         status_topic = self.get_parameter("status_topic").value
         targets_file = self.get_parameter("semantic_targets_file").value
         self._out_frame = self.get_parameter("output_frame").value
+        self._tf_buffer = tf2_ros.Buffer()
+        self._tf_listener = tf2_ros.TransformListener(self._tf_buffer, self)
 
         # ── Load semantic mapping ─────────────────────────────────────────
         # backend.launch.py sets this explicitly. The fallback only matters
@@ -144,6 +148,12 @@ class SemanticQueryNode(Node):
     # ── Callbacks ─────────────────────────────────────────────────────────
 
     def _memory_cb(self, msg: Detection3DArray) -> None:
+        if msg.header.frame_id != self._out_frame:
+            self._memory_objects = []
+            self.get_logger().warn(
+                "Ignoring memory in frame '%s'; expected '%s'"
+                % (msg.header.frame_id, self._out_frame))
+            return
         objs: list[MemoryObject] = []
         for det in msg.detections:
             if not det.results:
@@ -186,12 +196,25 @@ class SemanticQueryNode(Node):
                 % (semantic_name, parsed.desired_index)
             )
 
+        # Landmarks are map coordinates. Nearest must be measured from the
+        # current robot pose, rather than from the fixed map origin.
+        try:
+            robot_tf = self._tf_buffer.lookup_transform(
+                self._out_frame, "base_link", Time())
+        except tf2_ros.TransformException as exc:
+            self._publish_failure(
+                raw, semantic_name, detector_label,
+                "robot pose unavailable in %s: %s" % (self._out_frame, exc))
+            return
+
         result = select_target(
             self._memory_objects,
             semantic_name,
             detector_label,
             raw,
             desired_index=parsed.desired_index,
+            robot_x=robot_tf.transform.translation.x,
+            robot_y=robot_tf.transform.translation.y,
         )
 
         out = SemanticQueryResult()
