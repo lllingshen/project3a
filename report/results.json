@@ -1004,7 +1004,7 @@
   ],
   "baseline_acceptance_status": "Generic person, two observed indexed IDs, and trash-can measured pass. Unaided chair acceptance failed after600s exploration; operator-assisted observation followed by chair navigation measured pass0.972948m. This does not establish unaided chair acceptance.",
   "baseline_color_comparison_status": "completed; both queries failed because no chair landmark was available; blue evaluation also recorded unavailable robot map TF",
-  "video_status": "not_recorded; user will record manually",
+  "video_status": "recorded; available at demo_video/project3_demo.mp4",
   "baseline_color_comparison": [
     {
       "utc": "2026-10-05T03:14:22.644050+00:00",
@@ -1155,5 +1155,57 @@
     "chair_unaided": "failed: no active chair in memory after600s exploration",
     "chair_assisted_final_distance_m": 0.9729483765467724,
     "full_unaided_course_acceptance": false
+  },
+  "video_recording": {
+    "file": "demo_video/project3_demo.mp4",
+    "repository_file_url": "https://github.com/lllingshen/project3a/blob/main/demo_video/project3_demo.mp4",
+    "recording_session": "20261005T054507Z",
+    "editing_session": "20261005T060129Z",
+    "input": "The actual complete terminal stdin string is passed to the checker after Enter; each take executes one command.",
+    "timing_editing_note": "Only pre-Enter typing cadence is edited. Navigation footage remains at normal speed (1x); measurements come from the original recorded runs.",
+    "historical_results_note": "The six locateanything_attempts and the report color-command table remain historical validation results; video runs are recorded separately here.",
+    "interpretation": "Right is relative to the robot camera view. With only one red object, the functional description example does not isolate functional understanding.",
+    "runs": [
+      {
+        "utc": "2026-10-05T05:48:14.424256+00:00",
+        "command": "Move to the red object I can sit on.",
+        "expected_entity": "demo_red_chair",
+        "matched_entity": "demo_red_chair",
+        "selection_correct": true,
+        "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+        "terminal_elapsed_s": 8.61566763600058,
+        "final_distance_m": 1.0910822765314263,
+        "localization_error_m": 0.35242262985134154,
+        "criterion_m": 1.2,
+        "localization_tolerance_m": 0.5,
+        "arrival_pass": true,
+        "localization_pass": true,
+        "pass": true,
+        "errors": [],
+        "input_source": "terminal_stdin",
+        "source_record": ".runtime/recording/20261005T054507Z/red_01/attempt.json",
+        "input_record": ".runtime/recording/20261005T054507Z/red_01/input.json"
+      },
+      {
+        "utc": "2026-10-05T05:50:33.502162+00:00",
+        "command": "Move to the chair to the right of the red chair.",
+        "expected_entity": "demo_blue_chair",
+        "matched_entity": "demo_blue_chair",
+        "selection_correct": true,
+        "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+        "terminal_elapsed_s": 7.685087192001447,
+        "final_distance_m": 1.162913319747005,
+        "localization_error_m": 0.4246767220738891,
+        "criterion_m": 1.2,
+        "localization_tolerance_m": 0.5,
+        "arrival_pass": true,
+        "localization_pass": true,
+        "pass": true,
+        "errors": [],
+        "input_source": "terminal_stdin",
+        "source_record": ".runtime/recording/20261005T054507Z/blue_01/attempt.json",
+        "input_record": ".runtime/recording/20261005T054507Z/blue_01/input.json"
+      }
+    ]
   }
 }

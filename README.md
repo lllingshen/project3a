@@ -5,8 +5,9 @@
 This private assignment repository implements the detector and adds command-triggered
 LocateAnything navigation. The original course instructions and reference demos remain
 below; their measurements are not this project's results. See
-[the English report](report/report.pdf), [LaTeX source](report/report.tex), and
-[measured attempts](report/results.json).
+[the English report](report/report.pdf), [LaTeX source](report/report.tex),
+[measured attempts](report/results.json), and
+[demonstration video](demo_video/project3_demo.mp4).
 
 ### Build and local environment
 
@@ -44,7 +45,7 @@ export LOCATEANYTHING_EAGLE=/home/lingshen/research/locateanything_standalone/Ea
 # Set overrides BEFORE sourcing scripts/project3_env.sh on another installation.
 ```
 
-### Recording setup: two colored chairs
+### Color-command validation setup: two colored chairs
 
 Start the following in separate prepared terminals, in order. This compact demo
 uses a stationary start and a SLAM map of the visible room. `explore:=false`
@@ -144,17 +145,22 @@ and the trash can. The chair command passed at 0.973 m after an operator-guided
 view and a 22-second stationary observation allowed the unchanged semantic memory
 to relabel it correctly. The preceding unaided 600-second chair check failed;
 this is not a fully unattended acceptance pass. The report preserves these and
-the earlier failed trash-can attempts. The final LocateAnything red/blue runs
-reached the correct chairs at 1.080 m and 1.170 m, respectively.
+the earlier failed trash-can attempts. The final pair of the earlier LocateAnything
+color-command validation runs reached the correct chairs at 1.080 m and 1.170 m.
 
-### Video checklist (about 2–4 minutes)
+### Recorded demonstration
 
-1. Show Gazebo, RViz, and T6; identify **LocateAnything mode** and the red/blue scene.
-2. Show the red command being entered, its selected box, and the yellow map target.
-3. Show the navigation path, motion, arrival, and measured final distance.
-4. Label the scene reset, then repeat with the blue command and blue instance.
-5. Label any speed-up. Save the completed manual recording in
-   [demo_video/](demo_video/), for example as `project3_demo.mp4`.
+The [video](demo_video/project3_demo.mp4) runs for 1 min 16 sec and shows command
+entry, target selection, navigation, and measured arrival for:
+
+1. `Move to the red object I can sit on.` — red chair, 1.091 m.
+2. `Move to the chair to the right of the red chair.` — blue chair, 1.163 m.
+
+Each take starts with a fresh simulation, SLAM/navigation state, and backend.
+“Right” refers to the robot camera view. Only command-entry timing is edited;
+navigation plays at normal speed. Both recorded runs passed the arrival and
+localization checks. These results are listed separately from the earlier
+color-command runs in [results.json](report/results.json).
 
 The validated examples and limitations are in the report. They are individual
 demonstrations, not a general success-rate benchmark. Targets must be visible,

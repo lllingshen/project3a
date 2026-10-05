@@ -44,7 +44,7 @@ The project is based on \href{https://github.com/YiyuchenHu/turtlebot3-gazebo-na
 \newpage
 \section{Visual grounding and navigation} SLAM Toolbox uses laser scans and robot motion to estimate pose and construct an occupancy grid: cells indicate free, occupied, or unknown space. Semantic memory adds labeled object landmarks such as \code{person\_2}. It associates repeated detections and retains map positions. The occupancy grid supports path planning, while semantic memory connects object labels to locations in that grid.
 
-In LocateAnything mode, the baseline query node is not launched. A persistent worker in a separate Python environment loads the existing local LocateAnything-3B model. The complete referring expression is preserved: only the leading movement phrase is removed. For the red command the actual prompt was:
+In LocateAnything mode, the baseline query node is not launched. A persistent worker in a separate Python environment loads the existing local LocateAnything-3B model. The complete referring expression is preserved: only the leading movement phrase is removed. For the earlier red color-command run in Section~3, the actual prompt was:
 \begin{quote}\small
 Locate a single instance that matches the following description: the red chair.
 \end{quote}
@@ -89,7 +89,7 @@ Red chair & 0.168 & 8.079 & 1.080 & Pass\\
 Blue chair & 0.184 & 7.405 & 1.170 & Pass\\
 \bottomrule
 \end{tabular}
-\caption{Final red and blue runs, with baseline detection and memory still running. Time to terminal includes grounding and navigation; inference time excludes the 4.697~s model load.}
+\caption{Final pair of the earlier color-command validation runs, with baseline detection and memory still running. Time to terminal includes grounding and navigation; inference time excludes the 4.697~s model load.}
 \end{table}
 
 Both commands produced a box around the requested chair and led to that same chair during navigation. The selected map coordinates were $(0.858,0.727)$ for red and $(0.776,-0.691)$ for blue. Source image-to-scan offsets were 94~ms and 10~ms. Selected-point discrepancies from the Gazebo chair origins were 0.339~m and 0.434~m. These include the difference between the observed near surface and the model origin; they are not direct estimates of sensor accuracy.
@@ -119,5 +119,5 @@ My main contribution is connecting the full description and camera image to the 
 
 Tests ran on Ubuntu 22.04 with ROS 2 Humble, an RTX 5090, PyTorch 2.7.1+cu128, Ultralytics 8.4.60, and NumPy 1.26.4. The current extension requires a mapped scene and a visible, stationary target that intersects the laser plane. Searching for unseen objects and reliable rejection of absent targets remain outside this project.
 
-The \href{https://github.com/lllingshen/project3a}{project repository} contains the code, report, and README launch instructions. Its \href{https://github.com/lllingshen/project3a/tree/main/demo_video}{\code{demo\_video/}} directory is the location for the recorded demonstration of \emph{Move to the red chair.} and \emph{Move to the blue chair.}
+The accompanying \href{https://github.com/lllingshen/project3a/blob/main/demo_video/project3_demo.mp4}{demonstration video} in the \href{https://github.com/lllingshen/project3a}{project repository}'s \code{demo\_video/} directory records separate runs of \emph{Move to the red object I can sit on.} and \emph{Move to the chair to the right of the red chair.} Both reached the intended chair: final distances were 1.091~m and 1.163~m, with selected-point discrepancies of 0.352~m and 0.425~m; both passed the 1.2~m arrival and 0.5~m localization checks. The figures and Table~1 retain the earlier color-command results. ``Right'' refers to the robot's camera view; with only one red object, the first example does not isolate functional understanding. Only the pre-Enter typing cadence is edited; navigation plays at normal speed.
 \end{document}
