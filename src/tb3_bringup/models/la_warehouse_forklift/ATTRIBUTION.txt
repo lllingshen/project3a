@@ -1,0 +1,5 @@
+Forklift by Cole Biesemeyer, distributed by Open Robotics on Gazebo Fuel.
+Source: https://app.gazebosim.org/OpenRobotics/fuel/models/Forklift
+License: Creative Commons Attribution 4.0 International
+License terms: http://creativecommons.org/licenses/by/4.0/
+Changes for this course scene: Converted GLB to OBJ with Assimp 5.2, preserving mesh and albedo/normal textures; static; uniform 0.6 visual/collision scale; link recentered by y=-0.42613 m and raised 0.01 m so the model origin is at the footprint center. No control or perception plugin.

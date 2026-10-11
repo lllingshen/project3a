@@ -1,0 +1,10 @@
+# VisitorChair by Wan Yi Seow / Open Robotics, CC BY 4.0.
+# https://creativecommons.org/licenses/by/4.0/
+# Color variant: geometry unchanged; original texture replaced with plain white.
+newmtl VisitorChair
+Ka 0.94 0.94 0.94
+Kd 0.94 0.94 0.94
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 1

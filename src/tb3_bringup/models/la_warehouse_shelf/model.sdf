@@ -1,0 +1,310 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.6">
+  <model name="la_warehouse_shelf">
+    <static>true</static>
+    <link name="rack">
+      <collision name="upright_-0.22_-0.625_collision">
+        <pose>-0.22 -0.625 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.07 1.34</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="upright_-0.22_-0.625_visual">
+        <pose>-0.22 -0.625 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.07 1.34</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.08 0.18 0.4 1</ambient>
+          <diffuse>0.08 0.18 0.4 1</diffuse>
+        </material>
+      </visual>
+      <collision name="upright_-0.22_0.625_collision">
+        <pose>-0.22 0.625 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.07 1.34</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="upright_-0.22_0.625_visual">
+        <pose>-0.22 0.625 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.07 1.34</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.08 0.18 0.4 1</ambient>
+          <diffuse>0.08 0.18 0.4 1</diffuse>
+        </material>
+      </visual>
+      <collision name="upright_0.22_-0.625_collision">
+        <pose>0.22 -0.625 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.07 1.34</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="upright_0.22_-0.625_visual">
+        <pose>0.22 -0.625 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.07 1.34</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.08 0.18 0.4 1</ambient>
+          <diffuse>0.08 0.18 0.4 1</diffuse>
+        </material>
+      </visual>
+      <collision name="upright_0.22_0.625_collision">
+        <pose>0.22 0.625 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.07 1.34</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="upright_0.22_0.625_visual">
+        <pose>0.22 0.625 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.07 0.07 1.34</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.08 0.18 0.4 1</ambient>
+          <diffuse>0.08 0.18 0.4 1</diffuse>
+        </material>
+      </visual>
+      <collision name="deck_0_collision">
+        <!-- The visible bottom deck spans z=0.06..0.18 m so normal robot
+             pitch does not put the ~0.13 m laser plane below the rack. -->
+        <pose>0 0 0.12 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.5 1.35 0.12</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="deck_0_visual">
+        <pose>0 0 0.12 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.5 1.35 0.12</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.5 0.53 0.56 1</ambient>
+          <diffuse>0.5 0.53 0.56 1</diffuse>
+        </material>
+      </visual>
+      <collision name="beam_0_-0.24_collision">
+        <pose>-0.24 0 0.12 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="beam_0_-0.24_visual">
+        <pose>-0.24 0 0.12 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.9 0.36 0.06 1</ambient>
+          <diffuse>0.9 0.36 0.06 1</diffuse>
+        </material>
+      </visual>
+      <collision name="beam_0_0.24_collision">
+        <pose>0.24 0 0.12 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="beam_0_0.24_visual">
+        <pose>0.24 0 0.12 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.9 0.36 0.06 1</ambient>
+          <diffuse>0.9 0.36 0.06 1</diffuse>
+        </material>
+      </visual>
+      <collision name="deck_1_collision">
+        <pose>0 0 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.5 1.35 0.045</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="deck_1_visual">
+        <pose>0 0 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.5 1.35 0.045</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.5 0.53 0.56 1</ambient>
+          <diffuse>0.5 0.53 0.56 1</diffuse>
+        </material>
+      </visual>
+      <collision name="beam_1_-0.24_collision">
+        <pose>-0.24 0 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="beam_1_-0.24_visual">
+        <pose>-0.24 0 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.9 0.36 0.06 1</ambient>
+          <diffuse>0.9 0.36 0.06 1</diffuse>
+        </material>
+      </visual>
+      <collision name="beam_1_0.24_collision">
+        <pose>0.24 0 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="beam_1_0.24_visual">
+        <pose>0.24 0 0.67 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.9 0.36 0.06 1</ambient>
+          <diffuse>0.9 0.36 0.06 1</diffuse>
+        </material>
+      </visual>
+      <collision name="deck_2_collision">
+        <pose>0 0 1.18 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.5 1.35 0.045</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="deck_2_visual">
+        <pose>0 0 1.18 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.5 1.35 0.045</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.5 0.53 0.56 1</ambient>
+          <diffuse>0.5 0.53 0.56 1</diffuse>
+        </material>
+      </visual>
+      <collision name="beam_2_-0.24_collision">
+        <pose>-0.24 0 1.18 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="beam_2_-0.24_visual">
+        <pose>-0.24 0 1.18 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.9 0.36 0.06 1</ambient>
+          <diffuse>0.9 0.36 0.06 1</diffuse>
+        </material>
+      </visual>
+      <collision name="beam_2_0.24_collision">
+        <pose>0.24 0 1.18 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="beam_2_0.24_visual">
+        <pose>0.24 0 1.18 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.06 1.35 0.12</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.9 0.36 0.06 1</ambient>
+          <diffuse>0.9 0.36 0.06 1</diffuse>
+        </material>
+      </visual>
+      <collision name="package_left_collision">
+        <pose>0 -0.38 0.87 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.36 0.38 0.35</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="package_left_visual">
+        <pose>0 -0.38 0.87 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.36 0.38 0.35</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.55 0.36 0.16 1</ambient>
+          <diffuse>0.55 0.36 0.16 1</diffuse>
+        </material>
+      </visual>
+      <collision name="package_right_collision">
+        <pose>0 0.35 0.84 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.36 0.38 0.29</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="package_right_visual">
+        <pose>0 0.35 0.84 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.36 0.38 0.29</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.55 0.36 0.16 1</ambient>
+          <diffuse>0.55 0.36 0.16 1</diffuse>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

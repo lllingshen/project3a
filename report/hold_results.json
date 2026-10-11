@@ -1,0 +1,159 @@
+{
+  "scope": "Two-command arrival-and-hold check in the existing warehouse_objects session. This validates stopping after navigation and accepting the next command, not a new semantic accuracy benchmark.",
+  "archived_utc": "2026-10-10T05:49:31.338727+00:00",
+  "runtime_source": ".runtime/stop_diagnosis/hold_results.json",
+  "auto_resume_exploration": false,
+  "preserved_processes": {
+    "gazebo_pid": 186949,
+    "locateanything_memory_pid": 187671
+  },
+  "coordinator_replaced_only": true,
+  "attempts": [
+    {
+      "command": "Move to the fire extinguisher.",
+      "start": 35772.346358775,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "statuses": [
+        {
+          "elapsed_s": 0.0008358979976037517,
+          "text": "[SEMANTIC_QUERYING] EXPLORING \u2192 SEMANTIC_QUERYING"
+        },
+        {
+          "elapsed_s": 0.0009988679958041757,
+          "text": "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle"
+        },
+        {
+          "elapsed_s": 0.4314744500006782,
+          "text": "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'Move to the fire extinguisher.'"
+        },
+        {
+          "elapsed_s": 1.4340829009961453,
+          "text": "[SEMANTIC_NAV] SEMANTIC_QUERYING \u2192 SEMANTIC_NAV"
+        },
+        {
+          "elapsed_s": 1.4344355009961873,
+          "text": "[SEMANTIC_NAV] target selected: fire_extinguisher_0 (fire_extinguisher) at (0.86, -0.38) \u2014 waiting for goal pose"
+        },
+        {
+          "elapsed_s": 1.4352184289964498,
+          "text": "[SEMANTIC_NAV] goal pose received: (0.95, 0.12) in map \u2014 sending to Nav2"
+        },
+        {
+          "elapsed_s": 1.4372019459988223,
+          "text": "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving"
+        },
+        {
+          "elapsed_s": 26.43775461799669,
+          "text": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED"
+        },
+        {
+          "elapsed_s": 26.437891968002077,
+          "text": "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+        }
+      ],
+      "exploration_events": [
+        false
+      ],
+      "selection": {
+        "success": true,
+        "id": "fire_extinguisher_0",
+        "x": 0.857850818945967,
+        "y": -0.3758641899798783,
+        "status": "selected from visual memory view_17; confidence is transport-only"
+      },
+      "terminal_wall": 35798.784129063,
+      "held_seconds": 11.012257602000318,
+      "max_translation_m": 0.0003262416948606829,
+      "max_yaw_change_rad": 1.8486169945708397e-05,
+      "exploration_resumed": false,
+      "pass": true,
+      "hold_pose_samples": 295,
+      "hold_first_pose": [
+        1.225748179734642,
+        -0.3480340624246064,
+        -1.984383478414705
+      ],
+      "hold_last_pose": [
+        1.225879377054068,
+        -0.347735363735555,
+        -1.9843649922447593
+      ],
+      "velocity_samples": 0,
+      "max_abs_linear_command_m_s": null,
+      "max_abs_angular_command_rad_s": null
+    },
+    {
+      "command": "go to storage_rack_0",
+      "start": 35809.796584634,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "statuses": [
+        {
+          "elapsed_s": 0.0006371889976435341,
+          "text": "[SEMANTIC_QUERYING] TARGET_REACHED \u2192 SEMANTIC_QUERYING"
+        },
+        {
+          "elapsed_s": 0.0007511189978686161,
+          "text": "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle"
+        },
+        {
+          "elapsed_s": 0.4969402130009257,
+          "text": "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'go to storage_rack_0'"
+        },
+        {
+          "elapsed_s": 1.2082045369970729,
+          "text": "[SEMANTIC_NAV] SEMANTIC_QUERYING \u2192 SEMANTIC_NAV"
+        },
+        {
+          "elapsed_s": 1.208467225995264,
+          "text": "[SEMANTIC_NAV] target selected: storage_rack_0 (storage_rack) at (1.16, -1.44) \u2014 waiting for goal pose"
+        },
+        {
+          "elapsed_s": 1.209016355998756,
+          "text": "[SEMANTIC_NAV] goal pose received: (1.19, -0.94) in map \u2014 sending to Nav2"
+        },
+        {
+          "elapsed_s": 1.211750791000668,
+          "text": "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving"
+        },
+        {
+          "elapsed_s": 12.550405257999955,
+          "text": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED"
+        },
+        {
+          "elapsed_s": 12.550674676997005,
+          "text": "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+        }
+      ],
+      "exploration_events": [
+        false
+      ],
+      "selection": {
+        "success": true,
+        "id": "storage_rack_0",
+        "x": 1.15902705004122,
+        "y": -1.4403129139484543,
+        "status": "selected from visual memory view_15; confidence is transport-only"
+      },
+      "terminal_wall": 35822.347006122,
+      "held_seconds": 11.022187050999491,
+      "max_translation_m": 0.0003248589867911056,
+      "max_yaw_change_rad": 1.5459112810312092e-05,
+      "exploration_resumed": false,
+      "pass": true,
+      "hold_pose_samples": 295,
+      "hold_first_pose": [
+        0.9330962495224401,
+        -0.7129392578938829,
+        -1.8557192399429243
+      ],
+      "hold_last_pose": [
+        0.9331898195183098,
+        -0.7126281662399095,
+        -1.8557065294872157
+      ],
+      "velocity_samples": 1,
+      "max_abs_linear_command_m_s": 0.0,
+      "max_abs_angular_command_rad_s": 0.0
+    }
+  ]
+}

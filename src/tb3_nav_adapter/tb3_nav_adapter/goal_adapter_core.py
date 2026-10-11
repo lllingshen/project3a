@@ -31,7 +31,9 @@ def compute_approach_pose(
     Target and robot coordinates must use the same frame. Defaults cover
     base_link; map-frame callers must pass the robot's map position.
 
-    Returns None if the target is closer than *min_standoff*.
+    Returns None if the target is closer than *min_standoff*. If the robot
+    is already inside the requested approach distance, retain its position
+    and only face the target rather than moving further toward its surface.
     """
     dx, dy = tx - robot_x, ty - robot_y
     dist = math.hypot(dx, dy)
@@ -41,10 +43,11 @@ def compute_approach_pose(
 
     direction = math.atan2(dy, dx)
 
-    actual_offset = min(approach_distance, dist - min_standoff)
+    if dist <= approach_distance:
+        return robot_x, robot_y, direction
 
-    gx = tx - actual_offset * math.cos(direction)
-    gy = ty - actual_offset * math.sin(direction)
+    gx = tx - approach_distance * math.cos(direction)
+    gy = ty - approach_distance * math.sin(direction)
     yaw = direction
 
     return gx, gy, yaw

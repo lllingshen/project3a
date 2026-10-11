@@ -5,13 +5,17 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <std_srvs/srv/trigger.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2/time.hpp>
 
 #include <mutex>
 #include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <cmath>
 #include <algorithm>
@@ -19,6 +23,11 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include "exploration_policy.hpp"
+#include "safe_frontier.hpp"
+#include "footprint_proof.hpp"
+#include "observation_protocol.hpp"
+#include "goal_selection_policy.hpp"
 
 /**
  * @file goal_assignment_node.cpp
@@ -35,7 +44,7 @@
  *   last failed/canceled/aborted goal.
  * - **Selects** the best valid frontier using a **nearest-to-robot** policy among remaining candidates.
  * - Sends **`navigate_to_pose`** goals to Nav2 **asynchronously** via `rclcpp_action`.
- * - Handles **goal timeout** (cancel if navigation stalls), **success** (clears failure memory), **cancellation**,
+ * - Handles **goal timeout** (cancel if navigation stalls), **success** (records a visited goal), **cancellation**,
  *   **rejection**, and **abort** (records position for avoidance on the next selection).
  * - **Records failed goals** so `selectBestFrontier` can skip centroids near recent failures.
  *
@@ -75,20 +84,30 @@ public:
    * - Initial FSM state is `IDLE`; the timer drives both idle goal dispatch and navigating timeout checks.
    * - Action server must be available (Nav2 bt_navigator) before goals are sent.
    */
-  GoalAssignmentNode()
-  : Node("goal_assignment_node"),
+  explicit GoalAssignmentNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
+  : Node("goal_assignment_node", options),
     state_(State::IDLE)
   {
     declare_parameter<std::string>("frontiers_topic", "/frontiers");
     declare_parameter<std::string>("odom_topic", "/odometry/filtered");
     declare_parameter<std::string>("navigate_to_pose_action", "navigate_to_pose");
+    declare_parameter<bool>("require_nav2_active", false);
+    declare_parameter<std::string>("navigation_lifecycle_service",
+      "/lifecycle_manager_navigation/is_active");
     declare_parameter<std::string>("frame_id", "map");
     declare_parameter<std::string>("robot_base_frame", "base_link");
     declare_parameter<double>("goal_timeout", 60.0);
+    declare_parameter<double>("goal_max_duration_sec", 180.0);
+    declare_parameter<double>("goal_progress_distance", 0.10);
+    declare_parameter<std::string>("map_topic", "/map");
+    declare_parameter<std::string>("footprint_topic", "/global_costmap/published_footprint");
+    declare_parameter<std::string>("imu_topic", "/imu");
+    declare_parameter<double>("blocked_tilt_deg", 15.0);
+    declare_parameter<double>("blocked_tilt_duration_sec", 0.5);
     declare_parameter<double>("rate", 1.0);
     declare_parameter<double>("min_frontier_distance", 0.5);
     declare_parameter<double>("failed_goal_avoidance_radius", 1.0);
-    // Failed goals are remembered as a TIME-LIMITED SET, not a single slot.
+    // Failed goals are remembered as a set with local map evidence, not one slot.
     // The single slot was the direct cause of the 40 s limit cycle: a frontier
     // goal failed and was recorded, the fallback goal then failed and
     // OVERWROTE that record, which re-armed the very frontier that had just
@@ -111,6 +130,7 @@ public:
     // sweep (which provided almost no SLAM benefit because the laser only
     // sees current line-of-sight geometry).
     declare_parameter<bool>("enable_fallback_drive", true);
+    declare_parameter<int>("fallback_bootstrap_max_goals", 2);
     declare_parameter<std::string>("fallback_costmap_topic", "/global_costmap/costmap");
     declare_parameter<double>("fallback_radius_m", 1.5);
     declare_parameter<int>("fallback_num_samples", 16);
@@ -131,14 +151,8 @@ public:
     // because anti-loop's 0.45 m radius is smaller than the fallback radius).
     declare_parameter<bool>("enable_exploration_complete_detection", true);
     declare_parameter<int>("empty_frontier_streak_threshold", 3);
-    // Stalemate guard: also declare exploration complete when the timer
-    // callback fails to dispatch ANY goal for this many seconds in a row,
-    // even though /frontiers is still publishing non-empty PoseArrays.
-    // This catches the failure mode where every centroid is rejected by
-    // selectBestFrontier filters (min_frontier_distance, anti-loop,
-    // failed_goal_avoidance) and selectFallbackGoal also returns nullopt.
-    // Without this, the node would log "No valid frontiers" forever
-    // while the bot sits idle next to a corner.
+    // Stop when no usable frontier persists this long. Fallback motion does
+    // not reset the interval, nor does republishing the same blocked list.
     declare_parameter<double>("stalemate_idle_sec", 20.0);
     // Exploration-complete detection used to be gated on "the robot has
     // reached at least one goal". That gate is closed exactly when the node
@@ -164,8 +178,52 @@ public:
 
     frontiers_sub_ = create_subscription<geometry_msgs::msg::PoseArray>(
       frontiers_topic, 10, std::bind(&GoalAssignmentNode::frontiersCallback, this, std::placeholders::_1));
+    observation_event_pub_ = create_publisher<std_msgs::msg::String>(
+      "/locateanything/observation_event", rclcpp::QoS(10).reliable());
+    observation_sub_ = create_subscription<std_msgs::msg::String>(
+      "/locateanything/observation_request", rclcpp::QoS(10).reliable(),
+      [this](const std_msgs::msg::String::SharedPtr msg) {observationCallback(msg->data);});
+    observation_busy_sub_ = create_subscription<std_msgs::msg::Bool>(
+      "/locateanything/observation_busy", rclcpp::QoS(10).reliable(),
+      [this](const std_msgs::msg::Bool::SharedPtr msg) {
+        observation_busy_ = msg->data;
+        observation_busy_stamp_ns_ = now().nanoseconds();
+      });
     odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
       odom_topic, 10, std::bind(&GoalAssignmentNode::odomCallback, this, std::placeholders::_1));
+    imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
+      get_parameter("imu_topic").as_string(), rclcpp::SensorDataQoS(),
+      [this](const sensor_msgs::msg::Imu::SharedPtr msg) {
+        if (msg->orientation_covariance[0] < 0.0) {
+          inclination_.discard_pending();
+          return;
+        }
+        const auto & q = msg->orientation;
+        const double stamp = rclcpp::Time(msg->header.stamp).seconds();
+        if (std::abs(now().seconds() - stamp) > 0.5) {
+          inclination_.discard_pending();
+          return;
+        }
+        if (!inclination_.observe(stamp, q.x, q.y, q.z, q.w,
+          get_parameter("blocked_tilt_deg").as_double() * M_PI / 180.0,
+          get_parameter("blocked_tilt_duration_sec").as_double())) {return;}
+        // Cancel without recording the destination as failed: the chassis is
+        // tilted, so this does not establish anything about that destination.
+        cancelObservation("paused", "robot blocked by sustained IMU tilt");
+        ++goal_generation_;
+        auto handle = current_goal_handle_;
+        current_goal_handle_.reset();
+        goal_sent_time_.reset();
+        no_frontier_since_.reset();
+        state_ = State::IDLE;
+        if (handle) {nav_client_->async_cancel_goal(handle);}
+        RCLCPP_ERROR(get_logger(),
+          "[robot_blocked] IMU tilt %.1f deg persisted for %.2fs; exploration locked. "
+          "Canceled owned goal without marking its target failed. "
+          "Physically level the robot and restart this node before exploring again.",
+          inclination_.tilt_rad * 180.0 / M_PI,
+          get_parameter("blocked_tilt_duration_sec").as_double());
+      });
 
     // Global costmap is published with TRANSIENT_LOCAL durability by Nav2
     // (so late joiners receive the latest grid). Match that on the
@@ -174,8 +232,30 @@ public:
     costmap_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>(
       fallback_costmap_topic, costmap_qos,
       std::bind(&GoalAssignmentNode::costmapCallback, this, std::placeholders::_1));
+    map_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>(
+      get_parameter("map_topic").as_string(), costmap_qos,
+      [this](const nav_msgs::msg::OccupancyGrid::SharedPtr msg) {
+        if (msg->info.width && msg->info.height && msg->info.resolution > 0.0 &&
+          msg->data.size() == static_cast<size_t>(msg->info.width) * msg->info.height)
+        {latest_map_ = msg;}
+      });
+
+    // Nav2 publishes a volatile SystemDefaultsQoS PolygonStamped. Keep a
+    // bounded history; its exact-stamp TF may arrive after the polygon.
+    footprint_sub_ = create_subscription<geometry_msgs::msg::PolygonStamped>(
+      get_parameter("footprint_topic").as_string(), rclcpp::SystemDefaultsQoS(),
+      [this](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr msg) {
+        footprint_proof_.add(msg, now().nanoseconds());
+      });
 
     nav_client_ = rclcpp_action::create_client<NavigateToPose>(this, action_name);
+    require_nav2_active_ = get_parameter("require_nav2_active").as_bool();
+    if (require_nav2_active_) {
+      nav_active_client_ = create_client<std_srvs::srv::Trigger>(
+        get_parameter("navigation_lifecycle_service").as_string());
+      nav_active_timer_ = create_wall_timer(std::chrono::seconds(1),
+        std::bind(&GoalAssignmentNode::pollNavigationActive, this));
+    }
 
     require_startup_warmup_ = get_parameter("require_startup_warmup").as_bool();
     startup_warmup_done_ = !require_startup_warmup_;
@@ -192,11 +272,13 @@ public:
         if (!exploration_enabled_) {
           // The coordinator cannot cancel this client's action handle.
           // Invalidate pending acceptance/results as well as an active goal.
+          cancelObservation("paused", "exploration disabled");
           ++goal_generation_;
           auto handle = current_goal_handle_;
           current_goal_handle_.reset();
           goal_sent_time_.reset();
           state_ = State::IDLE;
+          no_frontier_since_.reset();
           if (handle) {
             nav_client_->async_cancel_goal(handle);
             RCLCPP_INFO(get_logger(), "[exploration] Canceling owned goal on pause");
@@ -241,11 +323,271 @@ public:
   }
 
 private:
+  friend class GoalAssignmentNodeTestAccess;
+
+  // An advertised action can still belong to an inactive lifecycle node.
+  // Poll the manager asynchronously and age evidence using wall time, so a
+  // paused/missing simulation clock cannot keep an old active result valid.
+  using SteadyClock = std::chrono::steady_clock;
+  bool navigationLifecycleReady() const
+  {
+    return !require_nav2_active_ || (nav_active_ && nav_active_stamp_ &&
+      SteadyClock::now() - *nav_active_stamp_ < std::chrono::seconds(3) &&
+      nav_active_client_->service_is_ready());
+  }
+
+  void pollNavigationActive()
+  {
+    const auto stamp = SteadyClock::now();
+    if (nav_active_request_) {
+      if (stamp - nav_active_request_->sent < std::chrono::seconds(2)) {return;}
+      nav_active_client_->remove_pending_request(nav_active_request_->id);
+      nav_active_request_.reset();
+      ++nav_active_generation_;
+      nav_active_ = false;
+      nav_active_stamp_.reset();
+    }
+    if (!nav_active_client_->service_is_ready()) {
+      nav_active_ = false;
+      nav_active_stamp_.reset();
+      return;
+    }
+    const auto generation = ++nav_active_generation_;
+    try {
+      const auto request = nav_active_client_->async_send_request(
+        std::make_shared<std_srvs::srv::Trigger::Request>(),
+        [this, generation, stamp](rclcpp::Client<std_srvs::srv::Trigger>::SharedFuture result) {
+          if (generation != nav_active_generation_) {return;}
+          nav_active_request_.reset();
+          // A late answer must not refresh an expired readiness observation.
+          nav_active_ = SteadyClock::now() - stamp < std::chrono::seconds(2) &&
+            result.get()->success;
+          nav_active_stamp_ = nav_active_ ? std::optional<SteadyClock::time_point>(stamp) :
+            std::nullopt;
+        });
+      nav_active_request_ = NavigationActiveRequest{request.request_id, stamp};
+    } catch (const std::exception & error) {
+      nav_active_ = false;
+      nav_active_stamp_.reset();
+      RCLCPP_WARN(get_logger(), "[idle] Nav2 lifecycle check failed: %s", error.what());
+    }
+  }
   // Forward-declared early so member functions whose signatures use Point
   // (selectFallbackGoal, countSuccessfulVisitsNear, recordFailedGoal, etc.)
   // can reference the type. The actual storage members of type Point live
   // farther down with the rest of the data members.
   struct Point { double x, y; };
+
+  void observationEvent(const ObservationRequest & request, const char * event,
+    const std::string & reason = "", const std::string & reason_code = "")
+  {
+    nlohmann::json payload{{"request_id", request.request_id}, {"track_id", request.track_id},
+      {"event", event}};
+    // Partial identities recovered from malformed requests have no validated
+    // frame/pose. Do not log their default zero coordinates as real evidence.
+    payload["stamp_ns"] = std::string(event) == "dispatched" && observation_sent_ns_ ?
+      *observation_sent_ns_ : now().nanoseconds();
+    if (!request.frame_id.empty()) {
+      payload["frame_id"] = request.frame_id;
+      payload["request_x"] = request.x;
+      payload["request_y"] = request.y;
+      payload["request_yaw"] = request.yaw;
+      payload["request_stamp_ns"] = request.stamp_ns;
+    }
+    if (!reason.empty()) {payload["reason"] = reason;}
+    if (!reason_code.empty()) {payload["reason_code"] = reason_code;}
+    std_msgs::msg::String message;
+    message.data = payload.dump();
+    observation_event_pub_->publish(message);
+    RCLCPP_INFO(get_logger(), "[observation] %s", message.data.c_str());
+  }
+
+  void cancelObservation(const char * event, const std::string & reason, bool clear_dwell = true)
+  {
+    const bool had_active = observations_.active.has_value();
+    for (const auto & request : observations_.cancel_all()) {observationEvent(request, event, reason);}
+    if (clear_dwell) {observation_dwell_until_ns_.reset();}
+    observation_sent_ns_.reset();
+    if (had_active) {
+      ++goal_generation_;
+      auto handle = current_goal_handle_;
+      current_goal_handle_.reset();
+      goal_sent_time_.reset();
+      state_ = State::IDLE;
+      if (handle) {nav_client_->async_cancel_goal(handle);}
+    }
+  }
+
+  void checkObservationClock()
+  {
+    footprint_proof_.observe_clock(now().nanoseconds());
+    if (observations_.clock_rolled_back(now().nanoseconds())) {
+      cancelObservation("canceled", "simulation clock rolled back; old observation invalidated");
+      observation_busy_stamp_ns_.reset();
+      observation_phase_.clock_rollback();
+    }
+  }
+
+  void observationCallback(const std::string & data)
+  {
+    checkObservationClock();
+    std::string reason;
+    const auto parsed = parse_observation_request(data, reason, get_parameter("frame_id").as_string());
+    if (!parsed) {
+      // A malformed payload cannot navigate; recover safe IDs only to let the
+      // sender correlate the rejection. Never use its unvalidated coordinates.
+      ObservationRequest identity;
+      try {
+        const auto j = data.size() <= 4096 ? nlohmann::json::parse(data) : nlohmann::json();
+        if (j.is_object()) {
+          for (const char * key : {"request_id", "track_id"}) {
+            if (j.contains(key) && j[key].is_string()) {
+              const auto value = j[key].get<std::string>();
+              if (observation_id_valid(value)) {
+                (std::string(key) == "request_id" ? identity.request_id : identity.track_id) = value;
+              }
+            }
+          }
+        }
+      } catch (const std::exception &) {}
+      observationEvent(identity, "rejected", "invalid request: " + reason, "protocol");
+      return;
+    }
+    if (parsed->clear()) {cancelObservation("canceled", "proposal withdrawn", false); return;}
+    if (!exploration_enabled_ || inclination_.blocked || start_motion_.blocked) {
+      observationEvent(*parsed, "paused", "exploration disabled or robot blocked");
+      return;
+    }
+    if (!observations_.offer(*parsed, now().nanoseconds(), reason)) {
+      const auto code = reason == "request is expired or future-dated" ? "expired" :
+        reason == "another observation is active" ? "busy" : "protocol";
+      observationEvent(*parsed, "rejected", reason, code);
+    }
+  }
+
+  // First dispatch follows geometric exhaustion; an established bounded phase
+  // may prioritize later observations. The raw map adds a
+  // known-free connectivity check to the shared cost/failed-region filters.
+  bool dispatchObservation(double rx, double ry, const std::string & frame_id)
+  {
+    if (!observations_.pending) {return false;}
+    const auto request = *observations_.pending;
+    const auto evaluation_time = now();
+    const auto reject = [&](const std::string & reason, const char * code = "geometry") {
+        observations_.retire_pending();
+        observationEvent(request, "rejected", reason, code);
+        return false;
+      };
+    if (observation_phase_.expired(evaluation_time.nanoseconds())) {
+      return reject("observation phase reached its fixed 120 second deadline", "budget");
+    }
+    if (!observation_fresh(request, evaluation_time.nanoseconds())) {return reject("request expired before dispatch", "expired");}
+    geometry_msgs::msg::TransformStamped robot;
+    try {
+      robot = tf_buffer_->lookupTransform(frame_id,
+        get_parameter("robot_base_frame").as_string(), tf2::TimePointZero);
+      const auto latest_ns = rclcpp::Time(robot.header.stamp).nanoseconds();
+      const auto lookup_ns = robot_safety_lookup_stamp(evaluation_time.nanoseconds(), latest_ns);
+      if (!lookup_ns) {return false;}
+      if (*lookup_ns < latest_ns) {
+        robot = tf_buffer_->lookupTransform(frame_id, get_parameter("robot_base_frame").as_string(),
+          rclcpp::Time(*lookup_ns, evaluation_time.get_clock_type()));
+      }
+      const double age = (evaluation_time - rclcpp::Time(robot.header.stamp)).seconds();
+      if (age < 0.0 || age > .75 || !std::isfinite(robot.transform.translation.x) ||
+        !std::isfinite(robot.transform.translation.y)) {return false;}
+      rx = robot.transform.translation.x; ry = robot.transform.translation.y;
+    } catch (const std::exception &) {return false;}
+    nav_msgs::msg::OccupancyGrid::SharedPtr costs;
+    {
+      std::lock_guard<std::mutex> lock(costmap_mutex_);
+      costs = current_costmap_;
+    }
+    const auto fresh = [&](const nav_msgs::msg::OccupancyGrid::SharedPtr & grid) {
+        if (!grid || grid->header.frame_id != frame_id) {return false;}
+        const double age = (evaluation_time - rclcpp::Time(grid->header.stamp)).seconds();
+        return age >= 0.0 && age <= 3.0;
+      };
+    // A static SLAM map remains useful after frontier exhaustion. Require a
+    // current dynamic costmap, but do not wait for the robot to move in order
+    // to refresh the raw map that is needed to authorize that very movement.
+    if (!latest_map_ || latest_map_->header.frame_id != frame_id ||
+      rclcpp::Time(latest_map_->header.stamp) > evaluation_time || !fresh(costs))
+    {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[observation] Waiting for a valid map and fresh costmap; proposal not rejected as unsafe");
+      return false;
+    }
+    const auto grid = [](const nav_msgs::msg::OccupancyGrid & map) {
+        const auto & q = map.info.origin.orientation;
+        const double yaw = std::atan2(2*(q.w*q.z+q.x*q.y), 1-2*(q.y*q.y+q.z*q.z));
+        return GridView{static_cast<int>(map.info.width), static_cast<int>(map.info.height),
+          map.info.resolution, map.info.origin.position.x, map.info.origin.position.y, yaw, map.data};
+      };
+    const auto map_grid = grid(*latest_map_), cost_grid = grid(*costs);
+    if (!map_grid.valid() || !cost_grid.valid() || !std::isfinite(map_grid.x) ||
+      !std::isfinite(map_grid.y) || !std::isfinite(map_grid.yaw) || !std::isfinite(map_grid.resolution) ||
+      !std::isfinite(cost_grid.x) || !std::isfinite(cost_grid.y) || !std::isfinite(cost_grid.yaw) ||
+      !std::isfinite(cost_grid.resolution))
+    {return false;}
+    if (!observation_grid_contains(map_grid, request.x, request.y) ||
+      !observation_grid_contains(cost_grid, request.x, request.y) ||
+      map_grid.at(request.x, request.y) != 0)
+    {return reject("observation endpoint is not in a known-free cell within map/costmap bounds");}
+    std::optional<VerifiedFootprint> footprint;
+    if (map_grid.at(rx,ry)==-1 && traversable_cost(cost_grid.at(rx,ry))) {
+      footprint=footprint_proof_.current(frame_id,
+        get_parameter("robot_base_frame").as_string(), evaluation_time.nanoseconds(), robot,
+        [&](int64_t stamp) {
+          return tf_buffer_->lookupTransform(frame_id, get_parameter("robot_base_frame").as_string(),
+            rclcpp::Time(stamp,evaluation_time.get_clock_type()), rclcpp::Duration::from_seconds(0));
+        });
+    }
+    if (map_grid.at(rx,ry)==-1 && traversable_cost(cost_grid.at(rx,ry)) && !footprint) {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[observation] Waiting for verified current footprint at unknown start; proposal not rejected as unsafe");
+      return false;
+    }
+    const auto reachable = reachable_free_cells(map_grid, cost_grid, rx, ry,
+      footprint ? &footprint->polygon : nullptr);
+    const auto [col, row] = map_grid.cell(request.x, request.y);
+    if (reachable.size() != map_grid.data.size() || !reachable[map_grid.index(col, row)]) {
+      return reject("observation endpoint has no known-free connection to robot");
+    }
+    if (footprint) {
+      RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[observation] Verified footprint start bridge used: footprint_stamp_ns=%ld robot=(%.4f,%.4f)",
+        static_cast<long>(footprint->source_stamp_ns), rx, ry);
+    }
+    geometry_msgs::msg::PoseArray candidates;
+    candidates.header.frame_id = frame_id;
+    geometry_msgs::msg::Pose pose;
+    pose.position.x = request.x; pose.position.y = request.y;
+    pose.orientation.z = std::sin(request.yaw/2); pose.orientation.w = std::cos(request.yaw/2);
+    candidates.poses.push_back(pose);
+    std::string selected_frame = frame_id;
+    // Observation independence is relative to the stored source view. The
+    // current robot may already be close to that safe new viewpoint and only
+    // need to turn. Frontier minimum travel/global visits measure geometric
+    // coverage; observation retries are bounded by the separate per-task
+    // attempted positions and dispatch budgets in the observation proposer.
+    GoalSelectionRejection selection_rejection = GoalSelectionRejection::None;
+    if (!selectBestFrontier(candidates, rx, ry, selected_frame,
+      GoalSelectionPurpose::Observation, &selection_rejection))
+    {
+      return reject(std::string("observation endpoint rejected: ") +
+        goal_selection_rejection_reason(selection_rejection));
+    }
+    if (observation_phase_.expired(now().nanoseconds())) {
+      return reject("observation phase expired during safety evaluation", "budget");
+    }
+    const auto started = observations_.start(now().nanoseconds());
+    if (!started) {return reject("request became stale before send", "expired");}
+    // Do not erase geometric progress/stop bookkeeping; these visits improve
+    // semantic evidence, not unknown-space coverage.
+    dispatchNavGoal(request.x, request.y, frame_id, "observation", request.yaw, started);
+    return true;
+  }
 
   void warmupCompleteCallback(const std_msgs::msg::Bool::SharedPtr msg)
   {
@@ -279,6 +621,7 @@ private:
     {
       std::lock_guard<std::mutex> lock(frontiers_mutex_);
       latest_frontiers_ = msg;
+      frontiers_received_ = now();
     }
     RCLCPP_DEBUG(get_logger(), "[frontiers] Received %zu centroids", msg->poses.size());
 
@@ -290,18 +633,8 @@ private:
       ++empty_frontier_streak_;
     } else {
       empty_frontier_streak_ = 0;
-      // If we previously declared the area "complete" and now the costmap
-      // produced new frontiers (e.g. someone opened a door / pushed an
-      // object), gracefully resume exploration. Also clear the stalemate
-      // counter so a fresh resume does not immediately re-trigger
-      // declaration on the next tick.
-      if (exploration_complete_) {
-        RCLCPP_INFO(get_logger(),
-          "[exploration] New frontiers appeared (count=%zu) — resuming.",
-          msg->poses.size());
-        exploration_complete_ = false;
-        idle_tick_streak_ = 0;
-      }
+      // The timer resumes only for a selectable frontier. A republished
+      // nonempty list of the same blocked points must not re-arm exploration.
     }
   }
 
@@ -387,6 +720,8 @@ private:
    * @param rx Robot x in map frame (meters), from TF.
    * @param ry Robot y in map frame (meters), from TF.
    * @param frame_id In/out: goal frame string; if empty on input, set from `frontiers.header.frame_id` when a candidate exists.
+   * @param purpose Ordinary frontier coverage or a bounded targeted observation.
+   * @param rejection Optional exact selection filter for a single-candidate request.
    * @return Index of the selected pose in `frontiers.poses`, or `std::nullopt` if every candidate is filtered out.
    *
    * Pipeline role:
@@ -407,12 +742,15 @@ private:
   std::optional<size_t> selectBestFrontier(
     const geometry_msgs::msg::PoseArray & frontiers,
     double rx, double ry,
-    std::string & frame_id)
+    std::string & frame_id,
+    GoalSelectionPurpose purpose = GoalSelectionPurpose::Frontier,
+    GoalSelectionRejection * rejection = nullptr)
   {
     const double min_dist = get_parameter("min_frontier_distance").as_double();
     const double min_dist_sq = min_dist * min_dist;
     const double avoid_radius = get_parameter("failed_goal_avoidance_radius").as_double();
     const double avoid_radius_sq = avoid_radius * avoid_radius;
+    if (rejection) {*rejection = GoalSelectionRejection::None;}
 
     size_t best = 0;
     double best_dist_sq = 1e30;
@@ -425,30 +763,31 @@ private:
       double dy = gy - ry;
       double d2 = dx * dx + dy * dy;
 
-      if (d2 < min_dist_sq) {
-        RCLCPP_DEBUG(get_logger(), "[select] Frontier [%zu] (%.2f, %.2f) skipped: too close (%.2f m)",
-          i, gx, gy, std::sqrt(d2));
-        continue;
-      }
-      if (isNearFailedGoal(gx, gy, avoid_radius_sq)) {
-        RCLCPP_DEBUG(get_logger(), "[select] Frontier [%zu] (%.2f, %.2f) skipped: near a recent failed goal",
-          i, gx, gy);
-        continue;
-      }
-
-      if (get_parameter("enable_repeated_centroid_filter").as_bool()) {
+      // Revalidate against the latest costmap; a formerly safe observation
+      // position can become obstructed after its frontier message was sent.
+      const int current_cost = static_cast<int>(getCostAtWorld(gx, gy));
+      // Preserve the ordinary selector's short-circuit order, including when
+      // its failed-region bookkeeping is consulted/pruned.
+      const bool reaches_safety = current_cost >= 0 && current_cost <= 60 &&
+        !(purpose == GoalSelectionPurpose::Frontier && d2 < min_dist_sq);
+      const bool failed_region = reaches_safety && isNearFailedGoal(gx, gy, avoid_radius_sq);
+      bool repeated_visit = false;
+      if (reaches_safety && !failed_region &&
+        get_parameter("enable_repeated_centroid_filter").as_bool())
+      {
         const double loop_r = get_parameter("repeated_centroid_reject_radius").as_double();
         const int max_vis = get_parameter("repeated_centroid_max_visits").as_int();
         if (loop_r > 0.0 && max_vis > 0) {
-          const double loop_r_sq = loop_r * loop_r;
-          const size_t n_vis = countSuccessfulVisitsNear(gx, gy, loop_r_sq);
-          if (static_cast<int>(n_vis) >= max_vis) {
-            RCLCPP_DEBUG(get_logger(),
-              "[select] Frontier [%zu] (%.2f, %.2f) skipped: anti-loop (>= %d visits within %.2f m)",
-              i, gx, gy, max_vis, loop_r);
-            continue;
-          }
+          repeated_visit = static_cast<int>(countSuccessfulVisitsNear(gx, gy, loop_r * loop_r)) >= max_vis;
         }
+      }
+      const auto filtered = goal_selection_rejection(
+        purpose, current_cost, d2 < min_dist_sq, failed_region, repeated_visit);
+      if (filtered != GoalSelectionRejection::None) {
+        if (rejection) {*rejection = filtered;}
+        RCLCPP_DEBUG(get_logger(), "[select] Candidate [%zu] (%.2f, %.2f) skipped: %s",
+          i, gx, gy, goal_selection_rejection_reason(filtered));
+        continue;
       }
 
       if (d2 < best_dist_sq) {
@@ -474,16 +813,10 @@ private:
    *   when safe; without this timer, no goals would be issued after startup.
    *
    * Implementation summary:
-   * 1. If state is `NAVIGATING` and a goal handle and send time exist: if elapsed time ≥ `goal_timeout`, record
-   *    failure at `current_goal_x_/y_`, clear handle/time, set `IDLE`, call `async_cancel_goal`, return.
-   * 2. If still `NAVIGATING` (no timeout), return (do not send another goal).
-   * 3. If Nav2 action server not ready, return.
-   * 4. Copy `latest_frontiers_` under mutex; if null or empty, call `logExplorationCompleteIfDue` and return.
-   * 5. `getRobotPoseInMap`; on failure return.
-   * 6. `selectBestFrontier`; if none, log and `logExplorationCompleteIfDue`, return.
-   * 7. Log selection; erase chosen pose from `latest_frontiers_->poses` under mutex (avoid immediate duplicate from cache).
-   * 8. Build `NavigateToPose::Goal` with identity quaternion; set `current_goal_x_/y_`; set state `NAVIGATING`;
-   *    register `goal_response_callback` and `result_callback`; call `async_send_goal`.
+   * 1. While navigating, observe progress and cancel only for a stall or the absolute duration limit.
+   * 2. Wait for startup warmup, Nav2, and a valid robot pose before choosing another goal.
+   * 3. Prefer a usable frontier; this is the only dispatch that clears the no-frontier interval.
+   * 4. If none exists, evaluate the stop condition before considering a finite startup fallback.
    *
    * Notes:
    * - State is set to `NAVIGATING` **before** acceptance; if the server **rejects**, the response callback resets to `IDLE`.
@@ -492,22 +825,83 @@ private:
    */
   void timerCallback()
   {
+    checkObservationClock();
+    if (observations_.pending && !observation_fresh(*observations_.pending, now().nanoseconds())) {
+      const auto expired = observations_.retire_pending();
+      observationEvent(*expired, "rejected", "request expired before dispatch", "expired");
+    }
+    if (inclination_.blocked || start_motion_.blocked) {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 10000,
+        "[robot_blocked] Exploration remains locked after a robot-state failure; this is not exploration complete.");
+      return;
+    }
     if (!exploration_enabled_) {
       return;
     }
+    if (observation_dwell_until_ns_) {
+      if (now().nanoseconds() < *observation_dwell_until_ns_) {return;}
+      observation_dwell_until_ns_.reset();
+    }
     const double goal_timeout = get_parameter("goal_timeout").as_double();
+    double robot_x, robot_y;
+    if (getRobotPoseInMap(robot_x, robot_y)) {
+      const int start_cost = static_cast<int>(getCostAtWorld(robot_x, robot_y));
+      if (start_motion_.observe_cost(now().seconds(), start_cost)) {
+        lockRobotBlocked("robot start remains inscribed/lethal in the fresh costmap for 2 seconds");
+        return;
+      }
+      // Hold dispatch/completion during the debounce rather than entering
+      // another destination while the robot's own footprint is in collision.
+      if (start_cost >= 99) {no_frontier_since_.reset(); return;}
+      if (state_ == State::IDLE && start_cost < 0) {
+        no_frontier_since_.reset();
+        empty_frontier_streak_ = 0;
+        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+          "[idle] Waiting for known robot start in a fresh costmap; not exploration complete");
+        return;
+      }
+    } else {
+      start_motion_.observe_cost(now().seconds(), -1);
+      no_frontier_since_.reset();
+      empty_frontier_streak_ = 0;
+    }
+
 
     if (state_ == State::NAVIGATING) {
+      // Bound a send whose acceptance never returns; a late acceptance is
+      // invalidated by generation and canceled using its own immutable ID.
+      if (observations_.active && !current_goal_handle_ && observation_sent_ns_ &&
+        now().nanoseconds() - *observation_sent_ns_ >= 5000000000LL)
+      {
+        cancelObservation("timeout", "Nav2 observation acceptance did not arrive within 5 seconds");
+        return;
+      }
       if (current_goal_handle_ && goal_sent_time_) {
-        double elapsed = (now() - *goal_sent_time_).seconds();
-        if (elapsed >= goal_timeout) {
-          RCLCPP_WARN(get_logger(), "[timeout] Goal stalled for %.1fs (limit %.1fs), canceling",
-            elapsed, goal_timeout);
+        double rx, ry;
+        const double seconds = now().seconds();
+        if (getRobotPoseInMap(rx, ry)) {
+          start_motion_.observe(rx, ry);
+          progress_.observe(seconds, rx, ry, std::numeric_limits<double>::quiet_NaN(),
+            get_parameter("goal_progress_distance").as_double());
+        }
+        const bool total_limit = progress_.total_expired(seconds,
+          get_parameter("goal_max_duration_sec").as_double());
+        if (total_limit || progress_.stalled(seconds, goal_timeout)) {
+          RCLCPP_WARN(get_logger(),
+            "[timeout] %s: elapsed=%.1fs, no_progress=%.1fs; canceling",
+            total_limit ? "absolute navigation limit" : "navigation stalled",
+            seconds - progress_.started, seconds - progress_.last_progress);
           auto handle = current_goal_handle_;
+          if (observations_.active) {
+            const auto request = *observations_.active;
+            observationEvent(request, "timeout", total_limit ? "absolute navigation limit" : "navigation stalled");
+            observations_.finish(request.request_id);
+            observation_sent_ns_.reset();
+          }
           ++goal_generation_;
           current_goal_handle_.reset();
           goal_sent_time_.reset();
-          recordFailedGoal(current_goal_x_, current_goal_y_);
+          recordNavigationFailure(seconds - progress_.started);
           state_ = State::IDLE;
           if (handle) {
             nav_client_->async_cancel_goal(handle);
@@ -547,6 +941,13 @@ private:
         "[idle] Nav2 navigate_to_pose action server not ready — no goal will be sent");
       return;
     }
+    if (!navigationLifecycleReady()) {
+      no_frontier_since_.reset();
+      empty_frontier_streak_ = 0;
+      RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[idle] Waiting for Nav2 lifecycle manager to confirm all navigation nodes active");
+      return;
+    }
 
     // Exploration is genuinely running from here on: enabled, warm-up done,
     // Nav2 answering. This is the zero point for min_exploration_time_sec.
@@ -559,17 +960,6 @@ private:
 
     std::string frame_id = get_parameter("frame_id").as_string();
 
-    // ── Exploration-complete short-circuit ───────────────────────────────
-    // Once we have declared the SLAM scan complete, the only thing that
-    // re-arms us is a non-empty `/frontiers` message (handled in
-    // frontiersCallback). Skip both frontier and fallback paths so the
-    // robot stops wandering inside a fully-scanned map.
-    if (exploration_complete_) {
-      RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 10000,
-        "[complete] Idle — scan finished. Will resume if new frontiers appear.");
-      return;
-    }
-
     // ── Path 1: prefer a real frontier centroid ─────────────────────────
     geometry_msgs::msg::PoseArray::SharedPtr frontiers;
     {
@@ -577,9 +967,40 @@ private:
       frontiers = latest_frontiers_;
     }
 
+    if (!frontiers || !frontiers_received_ || !fresh_frontier_input(now().seconds(),
+      frontiers_received_->seconds(), rclcpp::Time(frontiers->header.stamp).seconds(),
+      frontiers->header.frame_id == frame_id))
+    {
+      no_frontier_since_.reset();
+      empty_frontier_streak_ = 0;
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[idle] Waiting for fresh frontier safety evaluation in map frame; not exploration complete");
+      return;
+    }
+
+    // Once an actual observation starts, its existing continuous time budget
+    // also covers proposal/catalog gaps. Do not spend that bounded window on
+    // ordinary frontier travel. No goal is preempted: NAVIGATING, warmup,
+    // safety, fresh frontier input and the success dwell were checked above.
+    // Missing/false/stale busy or the fixed deadline restores normal priority.
+    if (observation_phase_.reserve(exploration_enabled_, observation_busy_,
+      observation_busy_stamp_ns_, now().nanoseconds()))
+    {
+      if (dispatchObservation(rx, ry, frame_id)) {return;}
+      RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[observation] Reserving bounded semantic phase while waiting for a safe proposal");
+      return;
+    }
+
     if (frontiers && !frontiers->poses.empty()) {
       std::optional<size_t> best_opt = selectBestFrontier(*frontiers, rx, ry, frame_id);
       if (best_opt) {
+        if (exploration_complete_) {
+          RCLCPP_INFO(get_logger(), "[exploration] A usable frontier appeared — resuming.");
+          exploration_complete_ = false;
+        }
+        no_frontier_since_.reset();
+        bootstrap_.frontier_started = true;
         size_t best = *best_opt;
         double gx = frontiers->poses[best].position.x;
         double gy = frontiers->poses[best].position.y;
@@ -587,6 +1008,11 @@ private:
 
         RCLCPP_INFO(get_logger(), "[goal] Selected [%zu] (%.2f, %.2f) dist=%.2f m",
           best, gx, gy, dist);
+
+        const auto & q = frontiers->poses[best].orientation;
+        const double norm = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
+        const double yaw = std::isfinite(norm) && norm > 1e-12 ?
+          std::atan2(2*(q.w*q.z + q.x*q.y), norm-2*(q.y*q.y+q.z*q.z)) : 0.0;
 
         // Remove the chosen centroid from the cached array so a stale
         // republish does not immediately re-select the same point.
@@ -597,7 +1023,7 @@ private:
           }
         }
 
-        dispatchNavGoal(gx, gy, frame_id, "frontier");
+        dispatchNavGoal(gx, gy, frame_id, "frontier", yaw);
         return;
       }
       RCLCPP_DEBUG(get_logger(),
@@ -606,79 +1032,71 @@ private:
         get_parameter("failed_goal_avoidance_radius").as_double());
     }
 
-    // ── Path 2: bootstrap fallback — drive toward a low-cost direction ──
+    if (!no_frontier_since_) {no_frontier_since_ = now();}
+    const double no_frontier_sec = (now() - *no_frontier_since_).seconds();
+    const double min_expl = get_parameter("min_exploration_time_sec").as_double();
+    const double exploration_age = exploration_start_time_ ?
+      (now() - *exploration_start_time_).seconds() : 0.0;
+    const bool empty_done = empty_frontier_streak_ >=
+      get_parameter("empty_frontier_streak_threshold").as_int();
+    const bool geometry_done = no_frontier_stop(
+      get_parameter("enable_exploration_complete_detection").as_bool(),
+      exploration_age, min_expl, empty_frontier_streak_,
+      get_parameter("empty_frontier_streak_threshold").as_int(), no_frontier_sec,
+      get_parameter("stalemate_idle_sec").as_double());
+    // A transient empty frontier list during startup is not permission to
+    // spend the semantic verification budget. First meet the original
+    // geometric-completion conditions, preserving their unchanged limits.
+    // The ordinary eligible branch above already dispatched and returned.
+    if (observation_dispatch_allowed(observations_.pending.has_value(), false,
+      geometry_done, exploration_complete_) && dispatchObservation(rx, ry, frame_id)) {return;}
+    const bool semantic_busy = observations_.pending.has_value() || observation_busy_fresh(
+      observation_busy_, observation_busy_stamp_ns_, now().nanoseconds());
+    if (semantic_busy) {
+      RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[observation] Semantic verification busy; geometric frontier exhaustion is not final completion");
+    }
+
+    if (exploration_complete_) {
+      RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 10000,
+        "[complete] Idle — no usable frontier. Resume requires a usable new frontier.");
+      return;
+    }
+    // Evaluate BEFORE fallback. Moving through known free space is not evidence
+    // of exploration progress, and cannot reset the no-frontier interval.
+    if (!semantic_busy && geometry_done)
+    {
+      if (start_motion_.stationary_failures > 0) {
+        lockRobotBlocked("no usable frontier after an unresolved failure to leave the start pose");
+        return;
+      }
+      RCLCPP_INFO(get_logger(),
+        "[complete-trigger] %s — empty_streak=%d, no_usable_frontier=%.1fs",
+        empty_done ? "empty /frontiers streak" : "all frontier candidates blocked or already visited",
+        empty_frontier_streak_, no_frontier_sec);
+      declareExplorationComplete(frame_id);
+      return;
+    }
+
+    // ── Path 2: finite bootstrap fallback before normal frontiers start ──
     // Replaces the legacy in-place sweep. The point is for the robot to
     // actually translate so SLAM grows the map, after which Path 1 will
     // naturally take over again.
-    if (get_parameter("enable_fallback_drive").as_bool()) {
+    if (get_parameter("enable_fallback_drive").as_bool() &&
+      bootstrap_.available(get_parameter("fallback_bootstrap_max_goals").as_int()))
+    {
       const double cooldown = get_parameter("fallback_cooldown_sec").as_double();
       const bool cooldown_ok = !last_fallback_send_time_ ||
         (now() - *last_fallback_send_time_).seconds() >= cooldown;
       if (cooldown_ok) {
         if (auto fb = selectFallbackGoal(rx, ry); fb) {
           last_fallback_send_time_ = now();
+          ++bootstrap_.used;
           dispatchNavGoal(fb->x, fb->y, frame_id, "fallback");
           return;
         }
       }
     }
-
-    // ── Path 3: detect "exploration complete" ────────────────────────────
-    // We reach here only when BOTH the frontier and the fallback paths
-    // failed to produce a goal this tick. Two complementary triggers:
-    //
-    //   (a) `empty_frontier_streak_` ≥ threshold:
-    //       /frontiers has been an empty PoseArray for K consecutive
-    //       publishes — frontier_detection has nothing to offer.
-    //
-    //   (b) `idle_tick_streak_` × period ≥ stalemate_idle_sec:
-    //       /frontiers is still publishing centroids but selectBestFrontier
-    //       rejects all of them (anti-loop, failed_goal_avoidance,
-    //       min_frontier_distance) AND fallback also returns nullopt.
-    //       This is the "bot hesitates next to a corner person" failure
-    //       mode the operator hit. Without (b) the node logs "No valid
-    //       frontiers" forever instead of declaring complete.
-    //
-    // `++idle_tick_streak_` lives at the very end of timerCallback so it
-    // ticks exactly once per missed-dispatch tick. dispatchNavGoal()
-    // resets it to 0 on any successful dispatch.
-    // Minimum-uptime guard, replacing the old `!visit_history_.empty()` gate.
-    // The old gate required a prior SUCCESS, so it was shut in exactly the
-    // deadlock it was supposed to break. Time since exploration was enabled is
-    // the property we actually want: "has this node had a fair chance yet".
-    const double min_expl = get_parameter("min_exploration_time_sec").as_double();
-    const bool had_fair_chance = exploration_start_time_ &&
-      (now() - *exploration_start_time_).seconds() >= min_expl;
-    if (get_parameter("enable_exploration_complete_detection").as_bool() &&
-        had_fair_chance)
-    {
-      const int empty_threshold = static_cast<int>(
-        get_parameter("empty_frontier_streak_threshold").as_int());
-      const double stalemate_sec =
-        get_parameter("stalemate_idle_sec").as_double();
-      const double rate_hz = get_parameter("rate").as_double();
-      const int stalemate_threshold_ticks = (rate_hz > 0.0)
-        ? static_cast<int>(stalemate_sec * rate_hz)
-        : std::numeric_limits<int>::max();
-
-      const bool empty_done = empty_frontier_streak_ >= empty_threshold;
-      const bool stalemate_done = idle_tick_streak_ >= stalemate_threshold_ticks;
-
-      if (empty_done || stalemate_done) {
-        const char * reason = empty_done
-          ? "empty /frontiers streak"
-          : "stalemate (no goal dispatched for ≥ stalemate_idle_sec)";
-        RCLCPP_INFO(get_logger(),
-          "[complete-trigger] %s — empty_streak=%d, idle_ticks=%d",
-          reason, empty_frontier_streak_, idle_tick_streak_);
-        declareExplorationComplete(frame_id);
-        return;
-      }
-    }
-
-    // No goal was dispatched this tick. Increment the stalemate counter
-    // so trigger (b) above eventually fires.
-    ++idle_tick_streak_;
 
     logExplorationCompleteIfDue();
   }
@@ -699,7 +1117,7 @@ private:
    */
   void declareExplorationComplete(const std::string & frame_id)
   {
-    if (exploration_complete_) return;
+    if (exploration_complete_ || start_motion_.blocked || inclination_.blocked) return;
     exploration_complete_ = true;
 
     const std::string policy =
@@ -731,7 +1149,7 @@ private:
   }
 
   /**
-   * @brief Build a NavigateToPose goal at (gx, gy) with identity orientation
+   * @brief Build a NavigateToPose goal at (gx, gy) with the requested planar orientation
    *        and dispatch it asynchronously, wiring response/result callbacks.
    *
    * Used by both the frontier path and the fallback-drive path so the FSM
@@ -739,14 +1157,21 @@ private:
    * regardless of where the goal came from. `source` is a short tag
    * ("frontier" / "fallback") for log readability.
    */
-  void dispatchNavGoal(double gx, double gy, const std::string & frame_id, const char * source)
+  void dispatchNavGoal(double gx, double gy, const std::string & frame_id, const char * source,
+    double goal_yaw = 0.0, std::optional<ObservationRequest> observation = std::nullopt)
   {
-    if (!exploration_enabled_) return;
-    // Reset stalemate counter on any successful dispatch (regardless of
-    // path). The counter only ticks up when timerCallback reaches its
-    // tail without dispatching, so this is the single canonical place
-    // to clear it.
-    idle_tick_streak_ = 0;
+    if (!exploration_enabled_ || inclination_.blocked || start_motion_.blocked) {
+      if (observation) {cancelObservation("paused", "exploration disabled or robot blocked before send");}
+      return;
+    }
+    // Recheck at the actual send boundary, after potentially expensive map
+    // selection. Do not blacklist a valid target while Nav2 is starting.
+    if (require_nav2_active_ &&
+      (!navigationLifecycleReady() || !nav_client_->action_server_is_ready()))
+    {
+      if (observation) {cancelObservation("paused", "Nav2 lifecycle not ready before send");}
+      return;
+    }
 
     NavigateToPose::Goal goal;
     goal.pose.header.stamp = now();
@@ -754,10 +1179,10 @@ private:
     goal.pose.pose.position.x = gx;
     goal.pose.pose.position.y = gy;
     goal.pose.pose.position.z = 0.0;
-    goal.pose.pose.orientation.w = 1.0;
+    goal.pose.pose.orientation.w = std::cos(goal_yaw/2.0);
     goal.pose.pose.orientation.x = 0.0;
     goal.pose.pose.orientation.y = 0.0;
-    goal.pose.pose.orientation.z = 0.0;
+    goal.pose.pose.orientation.z = std::sin(goal_yaw/2.0);
 
     current_goal_x_ = gx;
     current_goal_y_ = gy;
@@ -765,11 +1190,12 @@ private:
     auto send_opts = rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
     const std::string source_tag(source);
     const auto generation = ++goal_generation_;
-    send_opts.goal_response_callback = [this, source_tag, generation](typename GoalHandle::SharedPtr gh) {
+    send_opts.goal_response_callback = [this, source_tag, generation, observation](typename GoalHandle::SharedPtr gh) {
       if (generation != goal_generation_ || !exploration_enabled_) {
         if (gh) {
           nav_client_->async_cancel_goal(gh);
           RCLCPP_INFO(get_logger(), "[exploration] Canceled late goal acceptance after pause");
+          if (observation) {observationEvent(*observation, "canceled", "late acceptance for invalidated observation");}
         }
         return;
       }
@@ -777,41 +1203,85 @@ private:
         RCLCPP_INFO(get_logger(), "[action] Goal accepted (%s)", source_tag.c_str());
         current_goal_handle_ = gh;
         goal_sent_time_ = now();
+        progress_.start(now().seconds());
+        double rx = std::numeric_limits<double>::quiet_NaN(), ry = rx;
+        getRobotPoseInMap(rx, ry);
+        start_motion_.start(rx, ry);
         state_ = State::NAVIGATING;
+        if (observation) {observationEvent(*observation, "accepted");}
       } else {
         RCLCPP_WARN(get_logger(), "[action] Goal rejected (%s)", source_tag.c_str());
         recordFailedGoal(current_goal_x_, current_goal_y_);
         state_ = State::IDLE;
+        if (observation) {
+          observations_.finish(observation->request_id);
+          observation_sent_ns_.reset();
+          observationEvent(*observation, "rejected", "Nav2 rejected the observation goal", "nav2");
+        }
       }
     };
-    send_opts.result_callback = [this, source_tag, generation](const GoalHandle::WrappedResult & result) {
+    send_opts.feedback_callback = [this, generation](typename GoalHandle::SharedPtr,
+      const std::shared_ptr<const NavigateToPose::Feedback> feedback) {
+        if (generation != goal_generation_ || !exploration_enabled_ ||
+          state_ != State::NAVIGATING || !goal_sent_time_) {return;}
+        const auto & p = feedback->current_pose.pose.position;
+        progress_.observe(now().seconds(), p.x, p.y, feedback->distance_remaining,
+          get_parameter("goal_progress_distance").as_double());
+      };
+    send_opts.result_callback = [this, source_tag, generation, observation](const GoalHandle::WrappedResult & result) {
       if (generation != goal_generation_) return;
       current_goal_handle_.reset();
       goal_sent_time_.reset();
       state_ = State::IDLE;
+      if (observation) {
+        observations_.finish(observation->request_id);
+        observation_sent_ns_.reset();
+      }
 
       switch (result.code) {
         case rclcpp_action::ResultCode::SUCCEEDED:
           RCLCPP_INFO(get_logger(), "[result] SUCCEEDED (%s)", source_tag.c_str());
           // Deliberately NOT clearing failed_goals_ here -- see recordFailedGoal.
+          start_motion_.stationary_failures = 0;
           recordSuccessfulVisit(current_goal_x_, current_goal_y_);
+          if (observation) {
+            observation_dwell_until_ns_ = now().nanoseconds() + 5000000000LL;
+            observationEvent(*observation, "succeeded");
+          }
           break;
         case rclcpp_action::ResultCode::ABORTED:
           RCLCPP_WARN(get_logger(), "[result] ABORTED (%s)", source_tag.c_str());
-          recordFailedGoal(current_goal_x_, current_goal_y_);
+          recordNavigationFailure(now().seconds() - progress_.started);
+          if (observation) {observationEvent(*observation, "aborted");}
           break;
         case rclcpp_action::ResultCode::CANCELED:
           RCLCPP_WARN(get_logger(), "[result] CANCELED (%s)", source_tag.c_str());
-          recordFailedGoal(current_goal_x_, current_goal_y_);
+          recordNavigationFailure(now().seconds() - progress_.started);
+          if (observation) {observationEvent(*observation, "canceled");}
           break;
         default:
           RCLCPP_WARN(get_logger(), "[result] Unknown code (%s)", source_tag.c_str());
           recordFailedGoal(current_goal_x_, current_goal_y_);
+          if (observation) {observationEvent(*observation, "aborted", "unknown Nav2 result code");}
       }
     };
 
     state_ = State::NAVIGATING;
-    nav_client_->async_send_goal(goal, send_opts);
+    try {
+      nav_client_->async_send_goal(goal, send_opts);
+      if (observation) {
+        observation_sent_ns_ = now().nanoseconds();
+        observation_phase_.dispatched(*observation_sent_ns_);
+        observationEvent(*observation, "dispatched");
+      }
+    } catch (const std::exception & e) {
+      if (!observation) {throw;}
+      ++goal_generation_;
+      observations_.finish(observation->request_id);
+      observation_sent_ns_.reset();
+      state_ = State::IDLE;
+      observationEvent(*observation, "rejected", std::string("Nav2 send failed: ") + e.what(), "nav2");
+    }
   }
 
   /**
@@ -840,21 +1310,46 @@ private:
   int8_t getCostAtWorld(double wx, double wy)
   {
     std::lock_guard<std::mutex> lock(costmap_mutex_);
-    if (!current_costmap_) return -1;
+    if (!current_costmap_) {return -1;}
     const auto & cm = *current_costmap_;
-    const double ox = cm.info.origin.position.x;
-    const double oy = cm.info.origin.position.y;
-    const double res = cm.info.resolution;
-    if (res <= 0.0) return -1;
-    const int mx = static_cast<int>((wx - ox) / res);
-    const int my = static_cast<int>((wy - oy) / res);
-    if (mx < 0 || my < 0 ||
-        mx >= static_cast<int>(cm.info.width) ||
-        my >= static_cast<int>(cm.info.height))
-    {
-      return -1;
+    if (cm.header.frame_id != get_parameter("frame_id").as_string() ||
+      std::abs((now() - rclcpp::Time(cm.header.stamp)).seconds()) > 3.0) {return -1;}
+    const auto & q = cm.info.origin.orientation;
+    const double yaw = std::atan2(2*(q.w*q.z + q.x*q.y), 1-2*(q.y*q.y + q.z*q.z));
+    const GridView grid{static_cast<int>(cm.info.width), static_cast<int>(cm.info.height),
+      cm.info.resolution, cm.info.origin.position.x, cm.info.origin.position.y, yaw, cm.data};
+    return static_cast<int8_t>(grid.at(wx, wy));
+  }
+
+  void lockRobotBlocked(const char * reason)
+  {
+    start_motion_.blocked = true;
+    cancelObservation("paused", std::string("robot blocked: ") + reason);
+    ++goal_generation_;
+    auto handle = current_goal_handle_;
+    current_goal_handle_.reset();
+    goal_sent_time_.reset();
+    no_frontier_since_.reset();
+    state_ = State::IDLE;
+    if (handle) {nav_client_->async_cancel_goal(handle);}
+    RCLCPP_ERROR(get_logger(),
+      "[robot_blocked] %s; exploration locked, not COMPLETE. "
+      "No remote target failure recorded. Check robot clearance before restarting this node.", reason);
+  }
+
+  void recordNavigationFailure(double elapsed)
+  {
+    if (start_motion_.no_initial_motion(elapsed)) {
+      if (start_motion_.failed(elapsed)) {
+        lockRobotBlocked("two consecutive navigation attempts had less than 0.10 m initial translation");
+      } else {
+        RCLCPP_WARN(get_logger(),
+          "[start_stall] No initial translation; allow one retry without blacklisting the remote target");
+      }
+      return;
     }
-    return cm.data[static_cast<size_t>(my) * cm.info.width + mx];
+    start_motion_.failed(elapsed);
+    recordFailedGoal(current_goal_x_, current_goal_y_);
   }
 
   /**
@@ -950,10 +1445,10 @@ private:
    *
    * Pipeline role:
    * - Provides **recovery**: stops selection from handing back a goal that has
-   *   just failed, for `failed_goal_ttl_sec`.
+   *   just failed, until the retry cooldown and local map-change requirements are met.
    *
    * Implementation summary:
-   * 1. Drop expired entries.
+   * 1. Drop entries whose cooldown elapsed AND whose local map changed.
    * 2. If an entry already covers (gx, gy), refresh its timestamp instead of
    *    appending, so one repeatedly-failing spot cannot fill the set.
    * 3. Otherwise append; evict oldest beyond `failed_goal_max_entries`.
@@ -963,8 +1458,8 @@ private:
    *   other. That mutual overwrite was the deadlock.
    * - Entries are NOT cleared on SUCCEEDED. Clearing on success would re-arm a
    *   chronically failing frontier as soon as any fallback goal happened to
-   *   succeed, which is the same bug through a different door. TTL alone
-   *   decides when a failed goal becomes eligible again.
+   *   succeed, which is the same bug through a different door. A retry requires
+   *   both the cooldown and changed local occupancy evidence.
    */
   void recordFailedGoal(double gx, double gy)
   {
@@ -975,12 +1470,13 @@ private:
       const double dx = gx - f.x, dy = gy - f.y;
       if (dx * dx + dy * dy < r_sq) {
         f.stamp = now();
+        f.map_patch = mapPatch(f.x, f.y);
         RCLCPP_DEBUG(get_logger(),
           "[failed] Refreshed (%.2f, %.2f); set=%zu", f.x, f.y, failed_goals_.size());
         return;
       }
     }
-    failed_goals_.push_back({gx, gy, now()});
+    failed_goals_.push_back({gx, gy, now(), mapPatch(gx, gy)});
     const size_t cap = static_cast<size_t>(
       std::max<int64_t>(1, get_parameter("failed_goal_max_entries").as_int()));
     while (failed_goals_.size() > cap) {
@@ -990,19 +1486,43 @@ private:
       gx, gy, failed_goals_.size());
   }
 
-  /** Drop failure records older than `failed_goal_ttl_sec`. */
+  /** Sample a 1.6 m square at fixed world coordinates around a failed goal. */
+  std::vector<int8_t> mapPatch(double gx, double gy) const
+  {
+    if (!latest_map_) {return {};}
+    const auto & map = *latest_map_;
+    const auto & q = map.info.origin.orientation;
+    const double yaw = std::atan2(2.0 * (q.w * q.z + q.x * q.y),
+      1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+    const double c = std::cos(yaw), s = std::sin(yaw);
+    std::vector<int8_t> patch;
+    patch.reserve(81);
+    for (int y = -4; y <= 4; ++y) {
+      for (int x = -4; x <= 4; ++x) {
+        const double dx = gx + 0.2 * x - map.info.origin.position.x;
+        const double dy = gy + 0.2 * y - map.info.origin.position.y;
+        const int mx = static_cast<int>(std::floor((c * dx + s * dy) / map.info.resolution));
+        const int my = static_cast<int>(std::floor((-s * dx + c * dy) / map.info.resolution));
+        if (mx < 0 || my < 0 || mx >= static_cast<int>(map.info.width) ||
+          my >= static_cast<int>(map.info.height))
+        {patch.push_back(-1);} else {
+          patch.push_back(occupancy_class(map.data[static_cast<size_t>(my) * map.info.width + mx]));
+        }
+      }
+    }
+    return patch;
+  }
+
+  /** Retry only after cooldown AND substantial local occupancy change. */
   void pruneFailedGoals()
   {
-    const double ttl = get_parameter("failed_goal_ttl_sec").as_double();
-    if (ttl <= 0.0) { failed_goals_.clear(); return; }
+    const double cooldown = std::max(0.0, get_parameter("failed_goal_ttl_sec").as_double());
     const auto t = now();
     failed_goals_.erase(
       std::remove_if(failed_goals_.begin(), failed_goals_.end(),
         [&](const FailedGoal & f) {
-          // Guard against a clock jump backwards (sim time reset): treat a
-          // negative age as fresh rather than expiring the whole set.
           const double age = (t - f.stamp).seconds();
-          return age >= 0.0 && age > ttl;
+          return retry_failed_region(age, cooldown, f.map_patch, mapPatch(f.x, f.y));
         }),
       failed_goals_.end());
   }
@@ -1066,24 +1586,44 @@ private:
     auto now_t = now();
     if (!last_exploration_complete_log_time_ ||
         (now_t - *last_exploration_complete_log_time_).seconds() >= interval) {
-      RCLCPP_INFO(get_logger(), "[exploration] No valid frontiers — exploration complete (will retry when new frontiers appear)");
+      RCLCPP_INFO(get_logger(), "[exploration] No usable frontier yet — waiting for fresh candidates or the stop condition");
       last_exploration_complete_log_time_ = now_t;
     }
   }
 
   rclcpp::Subscription<geometry_msgs::msg::PoseArray>::SharedPtr frontiers_sub_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr observation_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr observation_busy_sub_;
+  ObservationPhase observation_phase_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr observation_event_pub_;
+  ObservationProtocol observations_;
+  std::optional<int64_t> observation_sent_ns_, observation_dwell_until_ns_, observation_busy_stamp_ns_;
+  bool observation_busy_{false};
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr warmup_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr exploration_enabled_sub_;
   rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr costmap_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PolygonStamped>::SharedPtr footprint_sub_;
+  FootprintProofCache footprint_proof_;
+  rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr map_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
+  nav_msgs::msg::OccupancyGrid::SharedPtr latest_map_;
   bool exploration_enabled_{true};
   rclcpp_action::Client<NavigateToPose>::SharedPtr nav_client_;
+  bool require_nav2_active_{false}, nav_active_{false};
+  rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr nav_active_client_;
+  rclcpp::TimerBase::SharedPtr nav_active_timer_;
+  struct NavigationActiveRequest {int64_t id; SteadyClock::time_point sent;};
+  std::optional<NavigationActiveRequest> nav_active_request_;
+  std::optional<SteadyClock::time_point> nav_active_stamp_;
+  uint64_t nav_active_generation_{0};
   rclcpp::TimerBase::SharedPtr timer_;
 
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
   geometry_msgs::msg::PoseArray::SharedPtr latest_frontiers_;
+  std::optional<rclcpp::Time> frontiers_received_;
   std::mutex frontiers_mutex_;
 
   // Cached global costmap snapshot used by the fallback drive sampler.
@@ -1095,15 +1635,20 @@ private:
   typename GoalHandle::SharedPtr current_goal_handle_;
   uint64_t goal_generation_{0};
   std::optional<rclcpp::Time> goal_sent_time_;
+  ProgressWatchdog progress_;
+  StartMotionGuard start_motion_;
+  InclinationGuard inclination_;
+  BootstrapBudget bootstrap_;
   double current_goal_x_{0.0};
   double current_goal_y_{0.0};
 
   // Point is forward-declared at the top of the private section.
-  // Time-limited set of goals that failed, timed out, or were rejected.
-  // Entries expire after `failed_goal_ttl_sec`, which is what lets a goal
-  // that failed only because the map was still unknown become selectable
-  // again once SLAM has grown.
-  struct FailedGoal { double x, y; rclcpp::Time stamp; };
+  // Time passing alone cannot make the same unchanged blocked region useful.
+  struct FailedGoal {
+    double x, y;
+    rclcpp::Time stamp;
+    std::vector<int8_t> map_patch;
+  };
   std::vector<FailedGoal> failed_goals_;
   // Set when exploration_enabled_ first turns true; the min-uptime guard for
   // exploration-complete detection is measured from here.
@@ -1118,17 +1663,12 @@ private:
   std::optional<Point> start_pose_;
   // Counter of consecutive `/frontiers` messages with zero poses; updated
   // in frontiersCallback. When this crosses
-  // `empty_frontier_streak_threshold` AND the robot has already reached at
-  // least one goal, timerCallback declares exploration complete.
+  // `empty_frontier_streak_threshold` after the minimum exploration period,
+  // timerCallback can declare that no more usable goals are available.
   int empty_frontier_streak_{0};
-  // Counter of consecutive timerCallback ticks where neither the frontier
-  // path nor the fallback path managed to dispatch a goal. Cleared by
-  // dispatchNavGoal() on any successful dispatch. Used to break the
-  // "frontiers exist but every candidate is filtered" stalemate where
-  // empty_frontier_streak_ would never grow.
-  int idle_tick_streak_{0};
-  // Set true by declareExplorationComplete; cleared by frontiersCallback
-  // when a non-empty PoseArray arrives. Gates the timer short-circuit.
+  // Fallback motion does not renew this interval. Only a usable frontier does.
+  std::optional<rclcpp::Time> no_frontier_since_;
+  // Resumed only when selection finds a usable frontier, not just a nonempty list.
   bool exploration_complete_{false};
 
   std::vector<Point> visit_history_;

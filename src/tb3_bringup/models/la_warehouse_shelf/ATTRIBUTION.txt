@@ -1,0 +1,1 @@
+Original SDF geometry by Ling Shen for CSE498 Project 3, 2026. Covered by the repository MIT license. No third-party mesh or texture. Each collision shape has matching visible geometry; no invisible localization surface.

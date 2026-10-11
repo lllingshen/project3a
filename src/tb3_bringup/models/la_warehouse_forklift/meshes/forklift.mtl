@@ -1,0 +1,25 @@
+# File produced by Open Asset Import Library (http://www.assimp.sf.net)
+# (assimp v5.2.0)
+
+newmtl Forklift
+Kd 1 1 1
+Ka 0.699999988 0.699999988 0.699999988
+Ks 0 0 0
+Ke 0 0 0
+d 1
+Ni 1.44999993
+illum 1
+map_Kd ../materials/textures/forklift_albedo.jpg
+bump ../materials/textures/forklift_normal.jpg
+map_bump ../materials/textures/forklift_normal.jpg
+
+newmtl $Material_1
+Kd 1 1 1
+Ka 0.699999988 0.699999988 0.699999988
+Ks 0 0 0
+Ke 0 0 0
+d 1
+illum 1
+map_Kd ../materials/textures/forklift_albedo.jpg
+bump ../materials/textures/forklift_normal.jpg
+map_bump ../materials/textures/forklift_normal.jpg

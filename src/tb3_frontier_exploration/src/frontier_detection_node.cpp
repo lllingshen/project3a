@@ -4,6 +4,12 @@
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <geometry_msgs/msg/point.hpp>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2/time.hpp>
+#include "safe_frontier.hpp"
+#include "footprint_proof.hpp"
+#include "observation_protocol.hpp"
 
 #include <vector>
 #include <set>
@@ -67,17 +73,17 @@ public:
   : Node("frontier_detection_node")
   {
     declare_parameter<std::string>("map_topic", "/map");
+    declare_parameter<std::string>("footprint_topic", "/global_costmap/published_footprint");
     declare_parameter<std::string>("costmap_topic", "/global_costmap/costmap");
     declare_parameter<std::string>("frontiers_topic", "/frontiers");
     declare_parameter<std::string>("frontiers_markers_topic", "/frontiers_markers");
     declare_parameter<std::string>("frame_id", "map");
     declare_parameter<int>("min_cluster_size", 5);
-    // Compared against /global_costmap/costmap, an OccupancyGrid whose known
-    // cells only ever carry 0..100 (Nav2 translates raw 253 -> 99 inscribed,
-    // 254 -> 100 lethal, 255 -> -1 unknown). 98 therefore rejects exactly the
-    // inscribed and lethal cells and nothing else. Anything above 100 disables
-    // the cost test entirely, which is what the previous 128/150 defaults did.
-    declare_parameter<int>("cost_threshold", 98);
+    // Nav2 OccupancyGrid scale: 99 inscribed, 100 lethal. Leave extra
+    // clearance by approaching frontiers from nearby cells <=60.
+    declare_parameter<int>("cost_threshold", 60);
+    declare_parameter<double>("approach_search_radius", 0.5);
+    declare_parameter<std::string>("robot_base_frame", "base_link");
     declare_parameter<bool>("use_costmap_filter", true);
     declare_parameter<bool>("publish_raw_markers", true);
     declare_parameter<bool>("publish_rejected_markers", true);
@@ -94,6 +100,8 @@ public:
     // latched frame that is already on the wire at connect time, so this node
     // stayed blind until the next periodic republish. goal_assignment_node
     // already subscribes to the costmap this way; match it here.
+    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
+    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
     auto latched_qos = rclcpp::QoS(1).transient_local().reliable();
     map_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>(
       map_topic, latched_qos, std::bind(&FrontierDetectionNode::mapCallback, this, std::placeholders::_1));
@@ -101,8 +109,18 @@ public:
       costmap_topic, latched_qos,
       std::bind(&FrontierDetectionNode::costmapCallback, this, std::placeholders::_1));
 
+    // Nav2 publishes a volatile SystemDefaultsQoS PolygonStamped. Keep a
+    // bounded history; its exact-stamp TF may arrive after the polygon.
+    footprint_sub_ = create_subscription<geometry_msgs::msg::PolygonStamped>(
+      get_parameter("footprint_topic").as_string(), rclcpp::SystemDefaultsQoS(),
+      [this](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr msg) {
+        footprint_proof_.add(msg, now().nanoseconds());
+      });
+
     frontiers_pub_ = create_publisher<geometry_msgs::msg::PoseArray>(frontiers_topic, 10);
     markers_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>(markers_topic, 10);
+    evaluation_timer_ = create_wall_timer(std::chrono::seconds(1),
+      std::bind(&FrontierDetectionNode::evaluateFrontiers, this));
 
     RCLCPP_INFO(get_logger(), "frontier_detection: map=%s, costmap=%s, frontiers=%s",
       map_topic.c_str(), costmap_topic.c_str(), frontiers_topic.c_str());
@@ -413,7 +431,7 @@ private:
   }
 
   /**
-   * @brief On each new SLAM map, detect frontiers, cluster, filter by costmap, publish poses and RViz markers.
+   * @brief Reevaluate cached SLAM geometry with current safety inputs at 1 Hz.
    *
    * @param msg Latest `nav_msgs/OccupancyGrid` from the map topic (SLAM output).
    * @return void (publishes topics as side effects).
@@ -439,7 +457,17 @@ private:
    */
   void mapCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
   {
-    if (msg->info.width == 0 || msg->info.height == 0) {
+    latest_map_ = msg;
+  }
+
+  void evaluateFrontiers()
+  {
+    footprint_proof_.observe_clock(now().nanoseconds());
+    const auto msg = latest_map_;
+    if (!msg) {return;}
+    if (msg->info.width == 0 || msg->info.height == 0 || msg->info.resolution <= 0 ||
+      msg->data.size() != static_cast<size_t>(msg->info.width) * msg->info.height)
+    {
       RCLCPP_WARN(get_logger(), "Received empty map");
       return;
     }
@@ -469,6 +497,7 @@ private:
     FRONTIER_LOG("[frontier] 2. total clusters: %zu (min_cluster_size=%d)", clusters.size(), min_size);
 
     std::vector<std::pair<double, double>> all_centroids;
+    std::vector<Cluster> frontier_seeds;
     for (size_t ci = 0; ci < clusters.size(); ci++) {
       const Cluster & cl = clusters[ci];
       FRONTIER_LOG("[frontier] 3. cluster[%zu] size=%zu", ci, cl.size());
@@ -479,49 +508,128 @@ private:
       double cx, cy;
       clusterCentroid(*msg, cl, cx, cy);
       all_centroids.emplace_back(cx, cy);
+      frontier_seeds.push_back(cl);
       FRONTIER_LOG("[frontier] 4. cluster[%zu] centroid (representative): (%.3f, %.3f)", ci, cx, cy);
     }
 
-    int cost_threshold = get_parameter("cost_threshold").as_int();
-    bool use_filter = get_parameter("use_costmap_filter").as_bool();
-    const int edge_margin = get_parameter("costmap_edge_margin").as_int();
-    int cm_w = 0, cm_h = 0;
+    const int maximum_cost = std::clamp(
+      static_cast<int>(get_parameter("cost_threshold").as_int()), 0, 60);
+    const bool use_filter = get_parameter("use_costmap_filter").as_bool();
+    const int edge_margin = std::max(0,
+      static_cast<int>(get_parameter("costmap_edge_margin").as_int()));
+    nav_msgs::msg::OccupancyGrid::SharedPtr costs;
     {
       std::lock_guard<std::mutex> lock(costmap_mutex_);
-      if (current_costmap_) {
-        cm_w = static_cast<int>(current_costmap_->info.width);
-        cm_h = static_cast<int>(current_costmap_->info.height);
+      costs = current_costmap_;
+    }
+    // Missing transforms/costs are readiness failures, not an empty explored map.
+    // Never publish unfiltered centroids while the safety inputs are unavailable.
+    if (!costs || costs->header.frame_id != msg->header.frame_id)
+    {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[frontier] Waiting for fresh costmap in the map frame; no unsafe goals published");
+      return;
+    }
+    const auto evaluation_time = now();
+    geometry_msgs::msg::TransformStamped robot;
+    try {
+      robot = tf_buffer_->lookupTransform(msg->header.frame_id,
+        get_parameter("robot_base_frame").as_string(), tf2::TimePointZero);
+      const auto latest_ns = rclcpp::Time(robot.header.stamp).nanoseconds();
+      const auto lookup_ns = robot_safety_lookup_stamp(evaluation_time.nanoseconds(), latest_ns);
+      if (!lookup_ns) {throw std::runtime_error("latest robot TF is stale");}
+      if (*lookup_ns < latest_ns) {
+        robot = tf_buffer_->lookupTransform(msg->header.frame_id,
+          get_parameter("robot_base_frame").as_string(),
+          rclcpp::Time(*lookup_ns, evaluation_time.get_clock_type()));
       }
+    } catch (const std::exception & e) {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[frontier] Waiting for robot TF: %s", e.what());
+      return;
+    }
+    if (!safety_evaluation_fresh(evaluation_time.nanoseconds(), rclcpp::Time(msg->header.stamp).nanoseconds(),
+      rclcpp::Time(costs->header.stamp).nanoseconds(), rclcpp::Time(robot.header.stamp).nanoseconds()) ||
+      !std::isfinite(robot.transform.translation.x) || !std::isfinite(robot.transform.translation.y))
+    {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[frontier] Waiting for fresh costmap/robot TF or non-future map; no safety heartbeat published");
+      return;
+    }
+    const auto grid = [](const nav_msgs::msg::OccupancyGrid & m) {
+        const auto & q = m.info.origin.orientation;
+        const double yaw = std::atan2(2*(q.w*q.z + q.x*q.y), 1-2*(q.y*q.y + q.z*q.z));
+        return GridView{static_cast<int>(m.info.width), static_cast<int>(m.info.height),
+          m.info.resolution, m.info.origin.position.x, m.info.origin.position.y, yaw, m.data};
+      };
+    const auto map_grid = grid(*msg), cost_grid = grid(*costs);
+    if (!map_grid.valid() || !cost_grid.valid() || !std::isfinite(map_grid.x) ||
+      !std::isfinite(map_grid.y) || !std::isfinite(map_grid.yaw) || !std::isfinite(map_grid.resolution) ||
+      !std::isfinite(cost_grid.x) || !std::isfinite(cost_grid.y) || !std::isfinite(cost_grid.yaw) ||
+      !std::isfinite(cost_grid.resolution)) {return;}
+    const double rx=robot.transform.translation.x, ry=robot.transform.translation.y;
+    std::optional<VerifiedFootprint> footprint;
+    if (map_grid.at(rx,ry)==-1 && traversable_cost(cost_grid.at(rx,ry))) {
+      footprint=footprint_proof_.current(msg->header.frame_id,
+        get_parameter("robot_base_frame").as_string(), evaluation_time.nanoseconds(), robot,
+        [&](int64_t stamp) {
+          return tf_buffer_->lookupTransform(msg->header.frame_id, get_parameter("robot_base_frame").as_string(),
+            rclcpp::Time(stamp,evaluation_time.get_clock_type()), rclcpp::Duration::from_seconds(0));
+        });
+    }
+    const auto reachable = reachable_free_cells(map_grid, cost_grid, rx, ry,
+      footprint ? &footprint->polygon : nullptr);
+    if (std::none_of(reachable.begin(), reachable.end(), [](uint8_t v) {return v != 0;})) {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[frontier] Robot start has no known-free connected map region; safety evaluation unavailable");
+      return;
+    }
+    if (footprint) {
+      RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000,
+        "[frontier] Verified footprint start bridge used: footprint_stamp_ns=%ld robot=(%.4f,%.4f)",
+        static_cast<long>(footprint->source_stamp_ns), rx, ry);
     }
     std::vector<std::pair<double, double>> safe_centroids;
+    std::vector<double> approach_yaws;
     std::vector<std::pair<double, double>> rejected_centroids;
-    for (size_t i = 0; i < all_centroids.size(); i++) {
+    for (size_t i = 0; i < all_centroids.size(); ++i) {
       const auto & c = all_centroids[i];
-      int cmx = 0, cmy = 0;
-      int cost = getCostAtWorldWithIndices(c.first, c.second, cmx, cmy);
-      FRONTIER_LOG("[frontier] 6. candidate[%zu] world=(%.3f, %.3f) costmap_idx=(%d, %d) cost=%d",
-        i, c.first, c.second, cmx, cmy, cost);
-      if (use_filter && cm_w > 0 && cm_h > 0 && edge_margin > 0) {
-        if (cmx < edge_margin || cmx >= cm_w - edge_margin ||
-            cmy < edge_margin || cmy >= cm_h - edge_margin) {
-          rejected_centroids.push_back(c);
-          FRONTIER_LOG("[frontier] 8. candidate[%zu] REJECTED (too close to costmap edge, idx=(%d,%d) margin=%d)",
-            i, cmx, cmy, edge_margin);
-          continue;
-        }
-      }
-      if (!use_filter || cost < 0) {
+      if (!use_filter) {
+        // Explicit debugging override; default operation always uses standoff.
         safe_centroids.push_back(c);
-        FRONTIER_LOG("[frontier] 8. candidate[%zu] ACCEPTED (no filter or cost<0)", i);
+        approach_yaws.push_back(0.0);
         continue;
       }
-      if (cost <= cost_threshold) {
-        safe_centroids.push_back(c); 
-        FRONTIER_LOG("[frontier] 8. candidate[%zu] ACCEPTED (cost %d <= threshold %d)", i, cost, cost_threshold);
-      } else {
+      GridCell selected_frontier;
+      const auto approach = safe_frontier_approach(map_grid, cost_grid, reachable,
+        frontier_seeds[i], c.first, c.second,
+        get_parameter("approach_search_radius").as_double(), maximum_cost, edge_margin,
+        &selected_frontier);
+      if (!approach) {
         rejected_centroids.push_back(c);
-        FRONTIER_LOG("[frontier] 8. candidate[%zu] REJECTED (cost %d > threshold %d)", i, cost, cost_threshold);
+        FRONTIER_LOG("[frontier] candidate[%zu] REJECTED (no connected safe approach)", i);
+        continue;
       }
+      const auto yaw = frontier_outward_yaw(map_grid, selected_frontier,
+        approach->first, approach->second);
+      if (!yaw) {
+        rejected_centroids.push_back(c);
+        FRONTIER_LOG("[frontier] candidate[%zu] REJECTED (boundary has no unknown neighbour)", i);
+        continue;
+      }
+      // Neighboring clusters may retreat to the same observation position.
+      const bool duplicate = std::any_of(safe_centroids.begin(), safe_centroids.end(),
+        [&](const auto & p) {return std::hypot(p.first - approach->first,
+          p.second - approach->second) < msg->info.resolution;});
+      if (!duplicate) {
+        safe_centroids.push_back(*approach);
+        approach_yaws.push_back(*yaw);
+      }
+      const auto seed_world = map_grid.center(selected_frontier.first, selected_frontier.second);
+      FRONTIER_LOG("[frontier] candidate[%zu] approach (%.3f, %.3f), seed_distance=%.3fm, cost=%d",
+        i, approach->first, approach->second,
+        std::hypot(seed_world.first-approach->first, seed_world.second-approach->second),
+        cost_grid.at(approach->first, approach->second));
     }
 
     FRONTIER_LOG("[frontier] 9. final safe published frontiers: %zu", safe_centroids.size());
@@ -535,17 +643,19 @@ private:
       frontier_cells.size(), clusters.size(), all_centroids.size(), safe_centroids.size(), rejected_centroids.size());
 
     geometry_msgs::msg::PoseArray pose_array;
-    pose_array.header.stamp = msg->header.stamp;
+    // This stamp certifies the safety evaluation. The map may be old and
+    // unchanged, while current costmap/TF were checked immediately above.
+    pose_array.header.stamp = evaluation_time;
     pose_array.header.frame_id = frame_id;
     pose_array.poses.resize(safe_centroids.size());
     for (size_t i = 0; i < safe_centroids.size(); i++) {
       pose_array.poses[i].position.x = safe_centroids[i].first;
       pose_array.poses[i].position.y = safe_centroids[i].second;
       pose_array.poses[i].position.z = 0.0;
-      pose_array.poses[i].orientation.w = 1.0;
+      pose_array.poses[i].orientation.w = std::cos(approach_yaws[i]/2.0);
       pose_array.poses[i].orientation.x = 0.0;
       pose_array.poses[i].orientation.y = 0.0;
-      pose_array.poses[i].orientation.z = 0.0;
+      pose_array.poses[i].orientation.z = std::sin(approach_yaws[i]/2.0);
     }
     frontiers_pub_->publish(pose_array);
 
@@ -628,10 +738,16 @@ private:
 
   rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr map_sub_;
   rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr costmap_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PolygonStamped>::SharedPtr footprint_sub_;
+  FootprintProofCache footprint_proof_;
   rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr frontiers_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr markers_pub_;
+  rclcpp::TimerBase::SharedPtr evaluation_timer_;
 
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   nav_msgs::msg::OccupancyGrid::SharedPtr current_costmap_;
+  nav_msgs::msg::OccupancyGrid::SharedPtr latest_map_;
   mutable std::mutex costmap_mutex_;
 };
 

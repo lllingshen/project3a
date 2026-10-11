@@ -20,24 +20,13 @@ frontier_detection_node:
     # Minimum number of adjacent frontier cells to form a cluster; smaller clusters are discarded.
     min_cluster_size: 3 # default is 5
 
-    # Max cost at a centroid to accept a frontier. Centroids with cost > this
-    # are rejected when use_costmap_filter is true.
-    #
-    # SCALE: this is compared against /global_costmap/costmap, which is a
-    # nav_msgs/OccupancyGrid, NOT the raw 0-255 costmap. Nav2's
-    # Costmap2DPublisher translation table maps raw -> grid as:
-    #   0 (FREE) -> 0 | 1..252 -> 1..98 | 253 (INSCRIBED) -> 99
-    #   254 (LETHAL) -> 100 | 255 (NO_INFORMATION) -> -1
-    # so the only values a known cell can carry are 0..100. The old 150 was on
-    # the raw 0-255 scale and therefore sat above every reachable value: the
-    # cost test never rejected anything (only the separate unknown/out-of-bounds
-    # path did). 98 is the largest value that still rejects exactly the two
-    # states a goal can never be sent to -- 99 = inscribed (the robot's own
-    # footprint would collide) and 100 = lethal -- while accepting the whole
-    # 0..98 inflation gradient, so ordinary frontiers near a wall still pass.
-    cost_threshold: 98 # was 150 on the wrong (raw 0-255) scale
-
-    # If true, reject frontier centroids whose costmap cost exceeds cost_threshold.
+    # Retreat at most 0.5 m along the known-free side of a frontier. Publish
+    # the nearest connected cell with Nav2 OccupancyGrid cost <=60; reject
+    # centroids with no safe observation position rather than enter a slot.
+    # 99 is inscribed, 100 lethal; 60 provides margin beyond robot radius.
+    cost_threshold: 60
+    approach_search_radius: 0.5
+    robot_base_frame: "base_link"
     use_costmap_filter: true
 
     # Visualization: publish raw frontier cells and rejected centroids as markers.
@@ -58,8 +47,18 @@ goal_assignment_node:
     # Ignore frontier centroids closer than this to the robot (m). Avoids sending trivial goals.
     min_frontier_distance: 0.5
 
-    # Cancel a goal and try another if it does not complete within this time (s).
-    goal_timeout: 20.0 # default is 60.0
+    # Cancel only after this much time without >=0.10 m of robot movement or
+    # improvement in Nav2's distance_remaining; long moving routes stay alive.
+    goal_timeout: 20.0
+    goal_progress_distance: 0.10
+    # Independent bound for oscillation/replanning that never finishes.
+    goal_max_duration_sec: 180.0
+    map_topic: "/map"
+    # A chassis pitched/rolled off the floor cannot safely use planar Nav2.
+    # Sustained real IMU tilt locks exploration without blacklisting its goal.
+    imu_topic: "/imu"
+    blocked_tilt_deg: 15.0
+    blocked_tilt_duration_sec: 0.5
 
     # Frame for goal poses (typically "map"). Also used for TF lookups (map -> base_link).
     frame_id: "map"
@@ -70,11 +69,9 @@ goal_assignment_node:
 
     # Do not select a goal within this distance (m) of the last failed/aborted goal.
     failed_goal_avoidance_radius: 1.0
-    # Failed goals are kept as a TIME-LIMITED SET, not one slot. The single
-    # slot let a failing fallback goal overwrite a failing frontier goal and
-    # re-arm it, producing a 40 s limit cycle that never ended
-    # (NOTES.md 7.8). TTL is what re-admits a goal that only failed because
-    # the map was still unknown there.
+    # Minimum retry cooldown. Time alone no longer clears failures: at least
+    # 8/81 samples in a 1.6 m local map patch must also become known or change
+    # free/occupied class. Inflation-cost jitter is not new occupancy evidence.
     failed_goal_ttl_sec: 90.0
     failed_goal_max_entries: 64
 
@@ -105,6 +102,9 @@ goal_assignment_node:
     # The robot actually translates, SLAM grows the map, and the normal
     # frontier loop resumes on its own when new frontiers appear.
     enable_fallback_drive: true
+    # Fallback is only a bounded bootstrap before the first genuine frontier
+    # dispatch, never a patrol of known free space after frontiers run out.
+    fallback_bootstrap_max_goals: 2
 
     # Topic of the OccupancyGrid we query for cell costs. Same one Nav2
     # planner uses; published with TRANSIENT_LOCAL durability.
@@ -151,11 +151,9 @@ goal_assignment_node:
     # also fail to find a low-cost fallback point, the bot would sit idle
     # forever, logging "No valid frontiers" every 5 s.
     #
-    # `stalemate_idle_sec` defines how long that "all frontier candidates
-    # filtered AND fallback unavailable" condition has to persist before
-    # we give up and declare exploration complete anyway. 20 s gives Nav2
-    # plenty of time to re-evaluate the costmap, but stops the bot from
-    # hesitating next to a corner person indefinitely.
+    # How long no usable frontier must persist before stopping. Fallback does
+    # not clear this timer. This is no further usable target, NOT proof that
+    # every part of the room or every semantic object has been observed.
     stalemate_idle_sec: 20.0
     # Exploration-complete detection no longer requires a prior successful
     # goal (that gate was shut exactly when the node was deadlocked). Instead

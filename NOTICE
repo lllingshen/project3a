@@ -114,9 +114,9 @@ model.config metadata (verbatim):
   description: A trash can.
 
 ----------------------------------------------------------------------
-Everything else in this repository (all ROS 2 packages, launch files,
-worlds, configuration, and documentation) is original course material
-covered by the repository LICENSE file (MIT).
+Except for the third-party assets and sources attributed in this file or
+the README, the course code and the added coursework code, launch files,
+worlds, configuration and documentation use the repository MIT LICENSE.
 
 ----------------------------------------------------------------------
 Project 3 material variants: Project3RedChair and Project3BlueChair
@@ -127,3 +127,39 @@ https://creativecommons.org/licenses/by/4.0/
 Changes by Ling Shen for Project 3: replace the textured visual material with
 plain red or blue material; retain the original mesh geometry and reference
 the unchanged VisitorChair collision mesh. Used in locateanything_chairs.world.
+
+----------------------------------------------------------------------
+LocateAnything warehouse color variants and original furniture
+----------------------------------------------------------------------
+la_colors_white_chair and la_colors_black_chair reuse VisitorChair by
+Wan Yi Seow / Open Robotics, credited above, under CC BY 4.0:
+https://creativecommons.org/licenses/by/4.0/
+Changes: local material-file reference and plain white/black visual materials;
+geometry and the original VisitorChair collision mesh are retained.
+la_colors_green_table and la_colors_blue_table are original SDF geometry
+(colored tabletop, four gray metal legs, visible lower frame and floor pads)
+for this extension, under this repository's MIT license. Visual and collision
+shapes match. The warehouse walls derive
+from the course's MIT-licensed world. Existing person_standing, sun and
+ground_plane models retain their original provenance and license notices above.
+
+----------------------------------------------------------------------
+LocateAnything warehouse objects
+----------------------------------------------------------------------
+la_warehouse_forklift: Forklift by Cole Biesemeyer / OpenRobotics,
+https://app.gazebosim.org/OpenRobotics/fuel/models/Forklift (Fuel version 1).
+License: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/
+Changes: GLB converted to Gazebo Classic-compatible OBJ with Assimp 5.2;
+embedded albedo/normal textures extracted unchanged; visual and collision
+geometry uniformly scaled by 0.6, made static and centered on the footprint.
+
+la_warehouse_extinguisher: Fire Extinguisher by Cole Biesemeyer /
+OpenRobotics, https://app.gazebosim.org/OpenRobotics/fuel/models/Fire%20Extinguisher
+(Fuel version 5). License: CC0 1.0,
+https://creativecommons.org/publicdomain/zero/1.0/
+Changes: original DAE/JPEG retained; uniform scale 1.8; upstream remote
+Artifact Proximity Detector include removed. No detector plugin is loaded.
+
+Source metadata, archive hashes and attribution are retained beside both
+models. la_warehouse_shelf and the new world arrangement were authored for
+this coursework extension under the repository MIT license.

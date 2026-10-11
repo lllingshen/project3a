@@ -38,6 +38,7 @@ Published topics
 from __future__ import annotations
 
 from enum import Enum, auto
+from copy import deepcopy
 
 import rclpy
 from rclpy.node import Node
@@ -116,6 +117,9 @@ class CoordinatorNode(Node):
         self._sweep_done = False
         self._pending_timer = None
         self._active_command = ""
+        self._command_id = 0
+        self._selected_target = None
+        self._goal_dispatched = False
         self._early_goal = None
         self._command_started_ns = 0
         self._command_forwarded = False
@@ -139,6 +143,10 @@ class CoordinatorNode(Node):
         self._query_cmd_pub = self.create_publisher(String, query_cmd_topic, reliable_qos)
         self._status_pub = self.create_publisher(String, status_topic, reliable_qos)
         self._cmd_vel_pub = self.create_publisher(Twist, "/cmd_vel", reliable_qos)
+        self._reached_target_pub = self.create_publisher(
+            SemanticQueryResult, "/semantic_navigation/reached_target",
+            QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE,
+                       durability=DurabilityPolicy.TRANSIENT_LOCAL))
 
         # ── Subscribers ───────────────────────────────────────────────────
         self.create_subscription(
@@ -204,6 +212,9 @@ class CoordinatorNode(Node):
             self._publish_status("busy; wait for the current command to finish")
             return
         self._active_command = cmd
+        self._command_id += 1
+        self._selected_target = None
+        self._goal_dispatched = False
         self._early_goal = None
         self._command_started_ns = self.get_clock().now().nanoseconds
         self._command_forwarded = False
@@ -307,6 +318,7 @@ class CoordinatorNode(Node):
             self._pending_timer = None
 
         if msg.success:
+            self._selected_target = deepcopy(msg)
             self._set_mode(Mode.SEMANTIC_NAV)
             self._arm_pending_timeout(5.0)
             self._publish_status(
@@ -336,6 +348,9 @@ class CoordinatorNode(Node):
             return
         if self._mode != Mode.SEMANTIC_NAV:
             return
+        if self._goal_dispatched:
+            return
+        self._goal_dispatched = True
         if self._pending_timer is not None:
             self._pending_timer.cancel()
             self._pending_timer = None
@@ -366,10 +381,16 @@ class CoordinatorNode(Node):
 
         future = self._nav_client.send_goal_async(
             goal_msg, feedback_callback=self._nav_feedback_cb)
-        future.add_done_callback(self._nav_goal_response_cb)
+        command_id = self._command_id
+        future.add_done_callback(lambda done: self._nav_goal_response_cb(done, command_id))
 
-    def _nav_goal_response_cb(self, future) -> None:
+    def _nav_goal_response_cb(self, future, command_id=None) -> None:
         goal_handle = future.result()
+        if (self._mode != Mode.SEMANTIC_NAV
+                or (command_id is not None and command_id != self._command_id)):
+            if goal_handle.accepted:
+                goal_handle.cancel_goal_async()
+            return
         if not goal_handle.accepted:
             self.get_logger().warn("[nav2] Goal REJECTED")
             self._nav_goal_handle = None
@@ -384,15 +405,17 @@ class CoordinatorNode(Node):
 
         if self._nav_timeout > 0:
             self._nav_timeout_timer = self.create_timer(
-                self._nav_timeout, self._nav_timeout_cb)
+                self._nav_timeout, lambda: self._nav_timeout_cb(command_id))
 
         result_future = goal_handle.get_result_async()
-        result_future.add_done_callback(self._nav_result_cb)
+        result_future.add_done_callback(lambda done: self._nav_result_cb(done, command_id))
 
     def _nav_feedback_cb(self, feedback_msg) -> None:
         pass
 
-    def _nav_timeout_cb(self) -> None:
+    def _nav_timeout_cb(self, command_id=None) -> None:
+        if command_id is not None and command_id != self._command_id:
+            return
         if self._nav_timeout_timer is not None:
             self._nav_timeout_timer.cancel()
             self._nav_timeout_timer = None
@@ -405,7 +428,12 @@ class CoordinatorNode(Node):
             self._publish_status("Nav2 goal timed out")
             self._schedule_resume()
 
-    def _nav_result_cb(self, future) -> None:
+    def _nav_result_cb(self, future, command_id=None) -> None:
+        # An older canceled/timed-out action may complete during a new command.
+        # It must neither finish that command nor publish a reached receipt.
+        if (self._mode != Mode.SEMANTIC_NAV
+                or (command_id is not None and command_id != self._command_id)):
+            return
         if self._nav_timeout_timer is not None:
             self._nav_timeout_timer.cancel()
             self._nav_timeout_timer = None
@@ -424,6 +452,8 @@ class CoordinatorNode(Node):
         STATUS_CANCELED = 5
 
         if status == STATUS_SUCCEEDED:
+            if self._selected_target is not None:
+                self._reached_target_pub.publish(self._selected_target)
             self.get_logger().info("[nav2] Goal SUCCEEDED")
             self._set_mode(Mode.TARGET_REACHED)
             self._publish_status("Nav2 goal succeeded — target reached")

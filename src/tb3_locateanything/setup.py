@@ -17,5 +17,6 @@ setup(
     tests_require=["pytest"],
     entry_points={"console_scripts": [
         "locateanything_node = tb3_locateanything.locateanything_node:main",
+        "observation_node = tb3_locateanything.observation_node:main",
     ]},
 )

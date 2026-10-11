@@ -1,0 +1,214 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.6">
+  <world name="locateanything_warehouse_objects">
+    <!-- Eight-target warehouse. The launcher selects a collision-free random spawn.
+         Opposite corners hold forklifts; the other corners and center hold racks.
+         Targets require multiple viewpoints: the startup sweep is not a full census.
+         Extinguisher offsets along north/east/south edges were sampled once with
+         random.Random(498) and fixed here so repeated tests use the same layout.
+         World poses are evaluation-only, never perception or memory inputs. -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <physics type="ode">
+      <real_time_factor>1.0</real_time_factor>
+      <max_step_size>.001</max_step_size>
+    </physics>
+    <scene>
+      <ambient>.60 .60 .60 1</ambient>
+      <background>.72 .76 .80 1</background>
+    </scene>
+    <gui>
+      <camera name="user_camera">
+        <pose>0 -6 11 0 1.07144960511 1.57079632679</pose>
+        <view_controller>orbit</view_controller>
+      </camera>
+    </gui>
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros>
+        <namespace>/gazebo</namespace>
+      </ros>
+      <update_rate>10</update_rate>
+    </plugin>
+    <model name="warehouse_wall_east">
+      <static>true</static>
+      <link name="wall">
+        <collision name="wall_collision">
+          <pose>3.1 0 1.25 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.2 6.4 2.5</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="wall_visual">
+          <pose>3.1 0 1.25 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.2 6.4 2.5</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.64 0.67 0.69 1</ambient>
+            <diffuse>0.64 0.67 0.69 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="warehouse_wall_west">
+      <static>true</static>
+      <link name="wall">
+        <collision name="wall_collision">
+          <pose>-3.1 0 1.25 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.2 6.4 2.5</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="wall_visual">
+          <pose>-3.1 0 1.25 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.2 6.4 2.5</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.64 0.67 0.69 1</ambient>
+            <diffuse>0.64 0.67 0.69 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="warehouse_wall_north">
+      <static>true</static>
+      <link name="wall">
+        <collision name="wall_collision">
+          <pose>0 3.1 1.25 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>6.4 0.2 2.5</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="wall_visual">
+          <pose>0 3.1 1.25 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>6.4 0.2 2.5</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.64 0.67 0.69 1</ambient>
+            <diffuse>0.64 0.67 0.69 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="warehouse_wall_south">
+      <static>true</static>
+      <link name="wall">
+        <collision name="wall_collision">
+          <pose>0 -3.1 1.25 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>6.4 0.2 2.5</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="wall_visual">
+          <pose>0 -3.1 1.25 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>6.4 0.2 2.5</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.64 0.67 0.69 1</ambient>
+            <diffuse>0.64 0.67 0.69 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="warehouse_aisle_markings">
+      <static>true</static>
+      <link name="paint">
+        <visual name="stripe_-2.65">
+          <pose>0 -2.65 .001 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>5.6 .06 .002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>.95 .73 .05 1</ambient>
+            <diffuse>.95 .73 .05 1</diffuse>
+          </material>
+        </visual>
+        <visual name="stripe_2.65">
+          <pose>0 2.65 .001 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>5.6 .06 .002</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>.95 .73 .05 1</ambient>
+            <diffuse>.95 .73 .05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <include>
+      <uri>model://la_warehouse_forklift</uri>
+      <name>warehouse_forklift_0</name>
+      <!-- Northwest corner: the low forks point north, toward the wall. -->
+      <pose>-2.2 1.8 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://la_warehouse_forklift</uri>
+      <name>warehouse_forklift_1</name>
+      <!-- Southeast corner: the low forks point south, toward the wall. -->
+      <pose>2.2 -1.8 0 0 0 3.14159265359</pose>
+    </include>
+    <include>
+      <uri>model://la_warehouse_extinguisher</uri>
+      <name>warehouse_fire_extinguisher_0</name>
+      <!-- North edge. -->
+      <pose>-.03 2.55 0 0 0 -1.57079632679</pose>
+    </include>
+    <include>
+      <uri>model://la_warehouse_extinguisher</uri>
+      <name>warehouse_fire_extinguisher_1</name>
+      <!-- East edge, clear of the southeast forklift. -->
+      <pose>2.55 .16 0 0 0 3.14159265359</pose>
+    </include>
+    <include>
+      <uri>model://la_warehouse_extinguisher</uri>
+      <name>warehouse_fire_extinguisher_2</name>
+      <!-- South edge. -->
+      <pose>-.44 -2.55 0 0 0 1.57079632679</pose>
+    </include>
+    <include>
+      <uri>model://la_warehouse_shelf</uri>
+      <name>warehouse_shelf_0</name>
+      <!-- Northeast corner. -->
+      <pose>2.2 2.2 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://la_warehouse_shelf</uri>
+      <name>warehouse_shelf_1</name>
+      <!-- Southwest corner. -->
+      <pose>-2.2 -2.2 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://la_warehouse_shelf</uri>
+      <name>warehouse_shelf_2</name>
+      <!-- Center, long edge east/west; leave aisles to the north and south. -->
+      <pose>0 0 0 0 0 1.57079632679</pose>
+    </include>
+  </world>
+</sdf>

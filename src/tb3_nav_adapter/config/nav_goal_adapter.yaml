@@ -9,6 +9,13 @@ nav_goal_adapter_node:
     # ── Approach geometry ─────────────────────────────────
     # How far from the target the robot should stop (metres).
     approach_distance: 0.5
+    # A wider search range must be explicit; never silently widen a goal.
+    max_approach_distance: 1.0
+    # Published OccupancyGrid encoding: 99 inscribed, 100 lethal, -1 unknown.
+    max_endpoint_cost: 60
+    costmap_topic: "/global_costmap/costmap"
+    costmap_max_age_sec: 3.0
+    robot_tf_max_age_sec: 0.75
 
     # Reject targets closer than this to avoid collisions (metres).
     min_standoff_distance: 0.3
@@ -19,8 +26,8 @@ nav_goal_adapter_node:
 
     # ── Frame ─────────────────────────────────────────────
     # Desired output frame. The node will TF-transform the approach
-    # pose from the source frame (typically base_link) into this frame.
-    # If the transform is unavailable, it falls back to the source frame.
+    # target from the source frame (typically base_link) into this frame.
+    # Missing TF or fresh global costmap rejects the goal.
     target_frame: "map"
 
     # TF lookup timeout in seconds.

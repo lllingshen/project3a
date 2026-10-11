@@ -1,0 +1,5 @@
+Fire Extinguisher by Cole Biesemeyer, distributed by Open Robotics on Gazebo Fuel.
+Source: https://app.gazebosim.org/OpenRobotics/fuel/models/Fire%20Extinguisher
+License: Creative Commons Zero v1.0 Universal
+License terms: https://creativecommons.org/publicdomain/zero/1.0/
+Changes for this course scene: Unchanged DAE mesh and JPEG texture. Removed remote Artifact Proximity Detector include so no artifact/ground-truth detector is loaded. Renamed for offline model lookup; visual and collision uniformly scaled 1.8 and raised 0.001 m. Approximate height 0.77 m, red body intersects the robot laser plane.

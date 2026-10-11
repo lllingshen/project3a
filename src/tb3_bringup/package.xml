@@ -7,8 +7,8 @@
   <description>
     Bringup for the TurtleBot3 semantic navigation course: every launch file,
     the RViz config, the Gazebo worlds and the vendored Gazebo models live
-    here. Nothing in this package runs code of its own — it only starts nodes
-    that live in the tb3_* packages and points them at the right assets.
+    here. Launch helpers verify safe simulator spawn poses; a velocity relay
+    provides one simulator drive writer with a command timeout.
 
     Start here when you are looking for "which file do I edit": launch/README.md
     maps each launch file to its terminal and to the config it reads.
@@ -30,8 +30,14 @@
 
   <!-- Third-party stacks the launch files include. -->
   <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
   <exec_depend>turtlebot3_gazebo</exec_depend>
   <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>nav2_regulated_pure_pursuit_controller</exec_depend>
   <exec_depend>slam_toolbox</exec_depend>
   <exec_depend>rviz2</exec_depend>
 

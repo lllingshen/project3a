@@ -1,0 +1,28 @@
+{
+  "createdAt": "2025-09-30T15:21:59Z",
+  "updatedAt": "2026-10-09T17:57:16Z",
+  "name": "Forklift",
+  "owner": "OpenRobotics",
+  "description": "A forklift",
+  "likes": 1,
+  "downloads": 2372,
+  "filesize": 3183722,
+  "upload_date": "2025-09-30T15:21:57Z",
+  "modify_date": "2025-09-30T15:21:57Z",
+  "license_id": 2,
+  "license_name": "Creative Commons Attribution 4.0 International",
+  "license_url": "http://creativecommons.org/licenses/by/4.0/",
+  "license_image": "https://i.creativecommons.org/l/by/4.0/88x31.png",
+  "permission": 0,
+  "url_name": "",
+  "version": 1,
+  "private": false,
+  "source_url": "https://app.gazebosim.org/OpenRobotics/fuel/models/Forklift",
+  "download_url": "https://fuel.gazebosim.org/1.0/OpenRobotics/models/Forklift.zip",
+  "changes": "Converted GLB to OBJ with Assimp 5.2, preserving mesh and albedo/normal textures; static; uniform 0.6 visual/collision scale; link recentered by y=-0.42613 m and raised 0.01 m so the model origin is at the footprint center. No control or perception plugin.",
+  "source_files_sha256": {
+    "model.config": "4caa18576ae1dbfe33ab8c5950a3c5514ca849574bccfe10023b737501429a0e",
+    "model.sdf": "99ffa5d91b37158ea3205cc3ff9410841f742439b7621e5262037fe6dda08636",
+    "base_visual.glb": "0e6c98bca069c38cbe73a8623d28e21c6492949760140253975217210d0ed03a"
+  }
+}

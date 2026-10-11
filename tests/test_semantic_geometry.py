@@ -61,3 +61,23 @@ def test_close_target_is_measured_from_robot():
 
 def test_body_frame_caller_keeps_original_geometry():
     assert compute_approach_pose(2.0, 0.0) == pytest.approx((1.5, 0.0, 0.0))
+
+
+@pytest.mark.parametrize("distance", [0.3, 0.4, 0.5])
+def test_robot_already_within_standoff_does_not_move_toward_surface(distance):
+    # The old dist - min_standoff offset moved a robot at 0.4m to 0.1m.
+    goal = compute_approach_pose(distance, 0.0)
+    assert goal == pytest.approx((0.0, 0.0, 0.0))
+    assert math.dist(goal[:2], (distance, 0.0)) == pytest.approx(distance)
+
+
+def test_near_target_keeps_translated_robot_position_and_faces_object():
+    goal = compute_approach_pose(2.24, -2.68, robot_x=2.0, robot_y=-3.0)
+    assert goal == pytest.approx((2.0, -3.0, math.atan2(0.32, 0.24)))
+
+
+@pytest.mark.parametrize("distance", [0.51, 0.6, 0.79, 2.0])
+def test_approach_from_outside_standoff_keeps_requested_surface_clearance(distance):
+    goal = compute_approach_pose(distance, 0.0)
+    assert math.dist(goal[:2], (distance, 0.0)) == pytest.approx(0.5)
+    assert goal[0] >= 0.0 and goal[0] < distance

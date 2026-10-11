@@ -1,0 +1,1324 @@
+{
+  "runtime_source": ".runtime/warehouse_acceptance/chairs_final",
+  "attempts": [
+    {
+      "utc": "2026-10-10T04:11:44.013014+00:00",
+      "command": "Move to the red object I can sit on.",
+      "mode": "locateanything",
+      "expected_entity": "demo_red_chair",
+      "note": "",
+      "ros_domain_id": "49",
+      "gazebo_master_uri": "http://127.0.0.1:11349",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "localization_tolerance_m": 0.5,
+      "landmarks_before": [],
+      "terminal_elapsed_s": 8.278490853997937,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "robot_map": {
+        "x": 0.15957756158076825,
+        "y": 0.46638508748697877,
+        "yaw": 0.43112648268672815,
+        "stamp_sec": 39.319
+      },
+      "robot_world": {
+        "x": 0.170765,
+        "y": 0.466925,
+        "yaw": 0.433904
+      },
+      "robot_sample_duration_s": 0.35651210300056846,
+      "truth_world": {
+        "demo_red_chair": {
+          "x": 1.2,
+          "y": 0.8,
+          "yaw": -1.0
+        },
+        "demo_blue_chair": {
+          "x": 1.2,
+          "y": -0.8,
+          "yaw": -1.0
+        }
+      },
+      "truth_requeries": [],
+      "image": "figures/memory_final_red.png",
+      "image_topic": "/locateanything/debug_image",
+      "image_stamp_sec": 22.489,
+      "image_at_selection": true,
+      "selected": {
+        "success": true,
+        "query_text": "Move to the red object I can sit on.",
+        "object_id": "chair_0",
+        "semantic_name": "chair",
+        "detector_label": "chair",
+        "frame": "map",
+        "image_or_query_stamp_sec": 22.489,
+        "x": 0.8552307784407475,
+        "y": 0.7304373488101243,
+        "status": "selected from visual memory view_0; confidence is transport-only"
+      },
+      "statuses": [
+        {
+          "elapsed_s": 0.0005504879991349299,
+          "text": "[SEMANTIC_QUERYING] EXPLORING \u2192 SEMANTIC_QUERYING"
+        },
+        {
+          "elapsed_s": 0.000880805997439893,
+          "text": "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle"
+        },
+        {
+          "elapsed_s": 0.4530830820003757,
+          "text": "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'Move to the red object I can sit on.'"
+        },
+        {
+          "elapsed_s": 1.4659988059975149,
+          "text": "[SEMANTIC_NAV] SEMANTIC_QUERYING \u2192 SEMANTIC_NAV"
+        },
+        {
+          "elapsed_s": 1.4664449439987948,
+          "text": "[SEMANTIC_NAV] target selected: chair_0 (chair) at (0.86, 0.73) \u2014 waiting for goal pose"
+        },
+        {
+          "elapsed_s": 1.4666138629982015,
+          "text": "[SEMANTIC_NAV] goal pose received: (0.38, 0.56) in map \u2014 sending to Nav2"
+        },
+        {
+          "elapsed_s": 1.4673731299990322,
+          "text": "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving"
+        },
+        {
+          "elapsed_s": 8.278445533997001,
+          "text": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED"
+        },
+        {
+          "elapsed_s": 9.442810540997016,
+          "text": "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+        },
+        {
+          "elapsed_s": 11.25600316299824,
+          "text": "[EXPLORING] TARGET_REACHED \u2192 EXPLORING"
+        },
+        {
+          "elapsed_s": 11.256237361998501,
+          "text": "[EXPLORING] exploration resumed"
+        }
+      ],
+      "exploration_resumed": true,
+      "map_world_alignment": "SE2 from terminal robot TF and immediately queried Gazebo pose",
+      "selected_world": {
+        "x": 0.8656821247332673,
+        "y": 0.7329084291642105
+      },
+      "matched_entity": "demo_red_chair",
+      "selection_correct": true,
+      "localization_error_m": 0.3409834608893463,
+      "final_distance_m": 1.0817872438007392,
+      "all_final_distances_m": {
+        "demo_red_chair": 1.0817872438007392,
+        "demo_blue_chair": 1.6323062337839673
+      },
+      "localization_pass": true,
+      "arrival_pass": true,
+      "pass": true,
+      "original_image_path": ".runtime/warehouse_acceptance/chairs_final/red.png",
+      "image_sha256": "1db3a696f9d55d25887664e1a47ff6aaa56240750af9685c35c9c1bf8fa806c4"
+    },
+    {
+      "utc": "2026-10-10T04:12:03.276327+00:00",
+      "command": "Move to the blue chair.",
+      "mode": "locateanything",
+      "expected_entity": "demo_blue_chair",
+      "note": "",
+      "ros_domain_id": "49",
+      "gazebo_master_uri": "http://127.0.0.1:11349",
+      "expected_id": null,
+      "errors": [],
+      "criterion_m": 1.2,
+      "localization_tolerance_m": 0.5,
+      "landmarks_before": [],
+      "terminal_elapsed_s": 6.284892289000709,
+      "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+      "robot_map": {
+        "x": 0.5913573235010627,
+        "y": -0.03142883856289056,
+        "yaw": -1.3193178160445647,
+        "stamp_sec": 56.557
+      },
+      "robot_world": {
+        "x": 0.600204,
+        "y": -0.031833,
+        "yaw": -1.32395
+      },
+      "robot_sample_duration_s": 0.32660988600036944,
+      "truth_world": {
+        "demo_red_chair": {
+          "x": 1.2,
+          "y": 0.8,
+          "yaw": -1.0
+        },
+        "demo_blue_chair": {
+          "x": 1.2,
+          "y": -0.8,
+          "yaw": -1.0
+        }
+      },
+      "truth_requeries": [],
+      "image": "figures/memory_final_blue.png",
+      "image_topic": "/locateanything/debug_image",
+      "image_stamp_sec": 22.489,
+      "image_at_selection": true,
+      "selected": {
+        "success": true,
+        "query_text": "Move to the blue chair.",
+        "object_id": "chair_1",
+        "semantic_name": "chair",
+        "detector_label": "chair",
+        "frame": "map",
+        "image_or_query_stamp_sec": 22.489,
+        "x": 0.7775921809818247,
+        "y": -0.6935269404448219,
+        "status": "selected from visual memory view_0; confidence is transport-only"
+      },
+      "statuses": [
+        {
+          "elapsed_s": 0.0007104169999365695,
+          "text": "[SEMANTIC_QUERYING] EXPLORING \u2192 SEMANTIC_QUERYING"
+        },
+        {
+          "elapsed_s": 0.0009571160007908475,
+          "text": "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle"
+        },
+        {
+          "elapsed_s": 0.4101518080024107,
+          "text": "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'Move to the blue chair.'"
+        },
+        {
+          "elapsed_s": 1.4225255519995699,
+          "text": "[SEMANTIC_NAV] SEMANTIC_QUERYING \u2192 SEMANTIC_NAV"
+        },
+        {
+          "elapsed_s": 1.4229596799996216,
+          "text": "[SEMANTIC_NAV] target selected: chair_1 (chair) at (0.78, -0.69) \u2014 waiting for goal pose"
+        },
+        {
+          "elapsed_s": 1.4231338300014613,
+          "text": "[SEMANTIC_NAV] goal pose received: (0.54, -0.25) in map \u2014 sending to Nav2"
+        },
+        {
+          "elapsed_s": 1.4242464550006844,
+          "text": "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving"
+        },
+        {
+          "elapsed_s": 6.284844599002099,
+          "text": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED"
+        },
+        {
+          "elapsed_s": 7.42153816499922,
+          "text": "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+        },
+        {
+          "elapsed_s": 9.212159450002218,
+          "text": "[EXPLORING] TARGET_REACHED \u2192 EXPLORING"
+        },
+        {
+          "elapsed_s": 9.212399609001295,
+          "text": "[EXPLORING] exploration resumed"
+        }
+      ],
+      "exploration_resumed": true,
+      "map_world_alignment": "SE2 from terminal robot TF and immediately queried Gazebo pose",
+      "selected_world": {
+        "x": 0.7833699102152817,
+        "y": -0.6947866695663909
+      },
+      "matched_entity": "demo_blue_chair",
+      "selection_correct": true,
+      "localization_error_m": 0.42970975857542987,
+      "final_distance_m": 0.9745951885295762,
+      "all_final_distances_m": {
+        "demo_red_chair": 1.0255249297335487,
+        "demo_blue_chair": 0.9745951885295762
+      },
+      "localization_pass": true,
+      "arrival_pass": true,
+      "pass": true,
+      "original_image_path": ".runtime/warehouse_acceptance/chairs_final/blue.png",
+      "image_sha256": "355450cd8eaee2e5be8a017afd59856f9bed13277ce731cdc81f686cb0c66e5e"
+    }
+  ],
+  "selections": [
+    {
+      "state": "selected",
+      "mode": "locateanything",
+      "request_id": 1,
+      "command": "Move to the red object I can sit on.",
+      "image_stamp_ns": 22489000000,
+      "image_frame": "camera_rgb_optical_frame",
+      "scan_stamp_ns": 22551000000,
+      "scan_frame": "base_scan",
+      "camera_info_stamp_ns": 22489000000,
+      "optical_frame": "camera_rgb_optical_frame",
+      "scan_to_map_translation": {
+        "x": -1.264666169087201,
+        "y": -2.394268620019863e-06,
+        "z": 0.13198996818779615
+      },
+      "scan_to_map_quaternion": {
+        "x": 5.03607359201329e-06,
+        "y": -9.842013080235165e-07,
+        "z": 1.5352017254174592e-05,
+        "w": 0.9999999998689925
+      },
+      "bearing_rad": 0.3317929886909938,
+      "range_m": 2.2422099113464355,
+      "scan_index": 19,
+      "valid_scan_rays": 5,
+      "map_to_odom_stamp_ns": 32551000000,
+      "gallery_box_xyxy": [
+        82.56,
+        56.672,
+        269.008,
+        296.032
+      ],
+      "gallery_object_ids": [
+        "chair_0",
+        "chair_1"
+      ],
+      "gallery_tile_box_xyxy": [
+        16,
+        16,
+        336,
+        336
+      ],
+      "answer": "<ref>the red object I can sit on</ref><box><120><161><391><841></box><|im_end|>",
+      "prompt": "Locate all the instances that matches the following description: the red object I can sit on.",
+      "box_xyxy": [
+        39.68,
+        10.08,
+        236.8,
+        262.08
+      ],
+      "target_map": {
+        "x": 0.8552307784407475,
+        "y": 0.7304373488101243,
+        "z": 0.13200149778937206
+      },
+      "object_id": "chair_0",
+      "inference_seconds": 0.2373297720005212,
+      "observation_age_sec": 10.011,
+      "view_id": "view_0",
+      "source": "visual_memory_gallery",
+      "query_kind": "gallery_description",
+      "historical_view": true,
+      "query_robot_odom": [
+        -1.2009797657852026,
+        1.1496885984731703e-06,
+        4.363272570633153e-05
+      ],
+      "observation_robot_odom": [
+        -1.2006639127362655,
+        9.517880444434508e-07,
+        3.052763618834051e-05
+      ],
+      "confidence_kind": "transport_placeholder_not_model_confidence"
+    },
+    {
+      "state": "selected",
+      "mode": "locateanything",
+      "request_id": 2,
+      "command": "Move to the blue chair.",
+      "image_stamp_ns": 22489000000,
+      "image_frame": "camera_rgb_optical_frame",
+      "scan_stamp_ns": 22551000000,
+      "scan_frame": "base_scan",
+      "camera_info_stamp_ns": 22489000000,
+      "optical_frame": "camera_rgb_optical_frame",
+      "scan_to_map_translation": {
+        "x": -1.264666169087201,
+        "y": -2.394268620019863e-06,
+        "z": 0.13198996818779615
+      },
+      "scan_to_map_quaternion": {
+        "x": 5.03607359201329e-06,
+        "y": -9.842013080235165e-07,
+        "z": 1.5352017254174592e-05,
+        "w": 0.9999999998689925
+      },
+      "bearing_rad": -0.32580793362107924,
+      "range_m": 2.166104793548584,
+      "scan_index": 341,
+      "valid_scan_rays": 5,
+      "map_to_odom_stamp_ns": 51752000000,
+      "gallery_box_xyxy": [
+        404.544,
+        56.672,
+        619.888,
+        296.032
+      ],
+      "gallery_object_ids": [
+        "chair_0",
+        "chair_1"
+      ],
+      "gallery_tile_box_xyxy": [
+        352,
+        16,
+        672,
+        336
+      ],
+      "answer": "<ref>the blue chair</ref><box><588><161><901><841></box><|im_end|>",
+      "prompt": "Locate all the instances that matches the following description: the blue chair.",
+      "box_xyxy": [
+        386.56,
+        9.12,
+        613.76,
+        262.56
+      ],
+      "target_map": {
+        "x": 0.7775921809818247,
+        "y": -0.6935269404448219,
+        "z": 0.123769427011913
+      },
+      "object_id": "chair_1",
+      "inference_seconds": 0.19196637700224528,
+      "observation_age_sec": 29.211,
+      "view_id": "view_0",
+      "source": "visual_memory_gallery",
+      "query_kind": "gallery_description",
+      "historical_view": true,
+      "query_robot_odom": [
+        0.17041606956229027,
+        0.46676461345335174,
+        0.4336258371882632
+      ],
+      "observation_robot_odom": [
+        -1.2006639127362655,
+        9.517880444434508e-07,
+        3.052763618834051e-05
+      ],
+      "confidence_kind": "transport_placeholder_not_model_confidence"
+    }
+  ],
+  "active_ros_nodes": [
+    "behavior_server",
+    "bt_navigator",
+    "bt_navigator_navigate_through_poses_rclcpp_node",
+    "bt_navigator_navigate_to_pose_rclcpp_node",
+    "camera_driver",
+    "controller_server",
+    "coordinator_node",
+    "gazebo",
+    "gazebo_ros_state",
+    "global_costmap",
+    "lifecycle_manager_navigation",
+    "lifecycle_manager_slam",
+    "local_costmap",
+    "locateanything_node",
+    "map_saver",
+    "nav_goal_adapter_node",
+    "planner_server",
+    "robot_state_publisher",
+    "rviz2",
+    "slam_toolbox",
+    "smoother_server",
+    "transform_listener_impl_585133f291c0",
+    "transform_listener_impl_5cbeb9f0f4b0",
+    "transform_listener_impl_5efd57b7e270",
+    "transform_listener_impl_61009317e740",
+    "transform_listener_impl_63eb3f4191f0",
+    "transform_listener_impl_64e2707b45b0",
+    "turtlebot3_diff_drive",
+    "turtlebot3_imu",
+    "turtlebot3_joint_state",
+    "turtlebot3_laserscan",
+    "velocity_smoother",
+    "warehouse_evidence_snapshot",
+    "waypoint_follower"
+  ],
+  "initial_memory": {
+    "views": [
+      {
+        "view_id": "view_0",
+        "stamp_ns": 22489000000,
+        "x": -1.2006639127362655,
+        "y": 9.517880444434508e-07,
+        "yaw": 3.052763618834051e-05,
+        "observations": [
+          {
+            "object_id": "chair_0",
+            "box": [
+              39.68,
+              10.08,
+              236.8,
+              262.08
+            ]
+          },
+          {
+            "object_id": "chair_1",
+            "box": [
+              386.56,
+              9.12,
+              613.76,
+              262.56
+            ]
+          }
+        ]
+      }
+    ],
+    "landmarks": [
+      {
+        "object_id": "chair_0",
+        "label": "chair",
+        "x": 0.8552307784407475,
+        "y": 0.7304373488101243,
+        "observations": 1,
+        "last_seen_ns": 22489000000,
+        "view_ids": [
+          "view_0"
+        ],
+        "descriptions": []
+      },
+      {
+        "object_id": "chair_1",
+        "label": "chair",
+        "x": 0.7875064163264117,
+        "y": -0.6932539044020619,
+        "observations": 1,
+        "last_seen_ns": 22489000000,
+        "view_ids": [
+          "view_0"
+        ],
+        "descriptions": []
+      }
+    ]
+  },
+  "memory_before_commands": {
+    "views": [
+      {
+        "view_id": "view_0",
+        "stamp_ns": 22489000000,
+        "x": -1.2006639127362655,
+        "y": 9.517880444434508e-07,
+        "yaw": 3.052763618834051e-05,
+        "observations": [
+          {
+            "object_id": "chair_0",
+            "box": [
+              39.68,
+              10.08,
+              236.8,
+              262.08
+            ]
+          },
+          {
+            "object_id": "chair_1",
+            "box": [
+              386.56,
+              9.12,
+              613.76,
+              262.56
+            ]
+          }
+        ]
+      }
+    ],
+    "landmarks": [
+      {
+        "object_id": "chair_0",
+        "label": "chair",
+        "x": 0.8552307784407475,
+        "y": 0.7304373488101243,
+        "observations": 1,
+        "last_seen_ns": 22489000000,
+        "view_ids": [
+          "view_0"
+        ],
+        "descriptions": []
+      },
+      {
+        "object_id": "chair_1",
+        "label": "chair",
+        "x": 0.7875064163264117,
+        "y": -0.6932539044020619,
+        "observations": 1,
+        "last_seen_ns": 22489000000,
+        "view_ids": [
+          "view_0"
+        ],
+        "descriptions": []
+      }
+    ]
+  },
+  "memory_after_commands": {
+    "views": [
+      {
+        "view_id": "view_0",
+        "stamp_ns": 22489000000,
+        "x": -1.2006639127362655,
+        "y": 9.517880444434508e-07,
+        "yaw": 3.052763618834051e-05,
+        "observations": [
+          {
+            "object_id": "chair_0",
+            "box": [
+              39.68,
+              10.08,
+              236.8,
+              262.08
+            ]
+          },
+          {
+            "object_id": "chair_1",
+            "box": [
+              386.56,
+              9.12,
+              613.76,
+              262.56
+            ]
+          }
+        ]
+      },
+      {
+        "view_id": "view_1",
+        "stamp_ns": 33893000000,
+        "x": -0.9071982221259148,
+        "y": 0.039740447014018535,
+        "yaw": 0.2650975340896746,
+        "observations": [
+          {
+            "object_id": "chair_0",
+            "box": [
+              183.68,
+              3.84,
+              385.28,
+              264.96
+            ]
+          }
+        ]
+      },
+      {
+        "view_id": "view_2",
+        "stamp_ns": 36294000000,
+        "x": -0.33414566400859597,
+        "y": 0.25497480955841295,
+        "yaw": 0.3681351840161282,
+        "observations": [
+          {
+            "object_id": "chair_0",
+            "box": [
+              209.28,
+              0.0,
+              477.44,
+              276.96
+            ]
+          }
+        ]
+      },
+      {
+        "view_id": "view_3",
+        "stamp_ns": 52485000000,
+        "x": 0.2848626836214655,
+        "y": 0.4862243071014124,
+        "yaw": -0.0816024920235484,
+        "observations": []
+      },
+      {
+        "view_id": "view_4",
+        "stamp_ns": 52786000000,
+        "x": 0.3533361965814098,
+        "y": 0.4694597602837392,
+        "yaw": -0.38647017862506217,
+        "observations": []
+      },
+      {
+        "view_id": "view_5",
+        "stamp_ns": 53085000000,
+        "x": 0.42069778027140725,
+        "y": 0.4293843972439454,
+        "yaw": -0.6808466431627679,
+        "observations": []
+      },
+      {
+        "view_id": "view_6",
+        "stamp_ns": 53686000000,
+        "x": 0.5180306787668302,
+        "y": 0.30708390841538674,
+        "yaw": -1.0760766436930762,
+        "observations": [
+          {
+            "object_id": "chair_1",
+            "box": [
+              162.56,
+              0.0,
+              479.36,
+              295.2
+            ]
+          }
+        ]
+      },
+      {
+        "view_id": "view_7",
+        "stamp_ns": 54589000000,
+        "x": 0.5848991097760284,
+        "y": 0.10439313342551404,
+        "yaw": -1.3808951201648034,
+        "observations": []
+      }
+    ],
+    "landmarks": [
+      {
+        "object_id": "chair_0",
+        "label": "chair",
+        "x": 0.8654937510554109,
+        "y": 0.691576043456387,
+        "observations": 3,
+        "last_seen_ns": 36294000000,
+        "view_ids": [
+          "view_0",
+          "view_1",
+          "view_2"
+        ],
+        "descriptions": [
+          "Move to the red object I can sit on."
+        ]
+      },
+      {
+        "object_id": "chair_1",
+        "label": "chair",
+        "x": 0.8773398345690713,
+        "y": -0.6093267260059955,
+        "observations": 2,
+        "last_seen_ns": 53686000000,
+        "view_ids": [
+          "view_0",
+          "view_6"
+        ],
+        "descriptions": [
+          "Move to the blue chair."
+        ]
+      }
+    ]
+  },
+  "scope": "Final gallery implementation: two commands in one uninterrupted simulation/backend; no reset between commands; exploration nodes disabled; individual examples, not a benchmark.",
+  "previous_independent_revision": {
+    "scope": "Two commands in one uninterrupted simulation and backend session; individual examples, not a benchmark.",
+    "active_ros_nodes": [
+      "/behavior_server",
+      "/bt_navigator",
+      "/bt_navigator_navigate_through_poses_rclcpp_node",
+      "/bt_navigator_navigate_to_pose_rclcpp_node",
+      "/camera_driver",
+      "/controller_server",
+      "/coordinator_node",
+      "/gazebo",
+      "/gazebo/gazebo_ros_state",
+      "/global_costmap/global_costmap",
+      "/lifecycle_manager_navigation",
+      "/lifecycle_manager_slam",
+      "/local_costmap/local_costmap",
+      "/locateanything_node",
+      "/map_saver",
+      "/nav_goal_adapter_node",
+      "/planner_server",
+      "/robot_state_publisher",
+      "/rviz2",
+      "/slam_toolbox",
+      "/smoother_server",
+      "/transform_listener_impl_5749a7dd2100",
+      "/transform_listener_impl_589cac42e1c0",
+      "/transform_listener_impl_5d43e923bd80",
+      "/transform_listener_impl_5dd764481a40",
+      "/transform_listener_impl_5eee1287cdb0",
+      "/transform_listener_impl_62bba4a094c0",
+      "/turtlebot3_diff_drive",
+      "/turtlebot3_imu",
+      "/turtlebot3_joint_state",
+      "/turtlebot3_laserscan",
+      "/velocity_smoother",
+      "/waypoint_follower"
+    ],
+    "attempts": [
+      {
+        "utc": "2026-10-10T03:37:35.001199+00:00",
+        "command": "Move to the red object I can sit on.",
+        "mode": "locateanything",
+        "expected_entity": "demo_red_chair",
+        "note": "Final revised independent-memory pipeline, command 1 of uninterrupted red then blue sequence.",
+        "ros_domain_id": "49",
+        "gazebo_master_uri": "http://127.0.0.1:11349",
+        "expected_id": null,
+        "errors": [],
+        "criterion_m": 1.2,
+        "localization_tolerance_m": 0.5,
+        "landmarks_before": [],
+        "terminal_elapsed_s": 7.638353213998926,
+        "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+        "robot_map": {
+          "x": 0.16129659396095747,
+          "y": 0.4551107034427289,
+          "yaw": 0.4472472096591263,
+          "stamp_sec": 80.201
+        },
+        "robot_world": {
+          "x": 0.163646,
+          "y": 0.456234,
+          "yaw": 0.451173
+        },
+        "robot_sample_duration_s": 0.4142835450002167,
+        "truth_world": {
+          "demo_red_chair": {
+            "x": 1.2,
+            "y": 0.8,
+            "yaw": -1.0
+          },
+          "demo_blue_chair": {
+            "x": 1.2,
+            "y": -0.8,
+            "yaw": -1.0
+          }
+        },
+        "truth_requeries": [],
+        "image": ".runtime/yolo_free_memory/accepted_sequence/red_selected.png",
+        "image_topic": "/locateanything/debug_image",
+        "image_stamp_sec": 45.485,
+        "image_at_selection": true,
+        "selected": {
+          "success": true,
+          "query_text": "Move to the red object I can sit on.",
+          "object_id": "chair_0",
+          "semantic_name": "chair",
+          "detector_label": "chair",
+          "frame": "map",
+          "image_or_query_stamp_sec": 45.485,
+          "x": 0.8542856404557103,
+          "y": 0.7278806186424052,
+          "status": "selected from visual memory view_0; confidence is transport-only"
+        },
+        "statuses": [
+          {
+            "elapsed_s": 0.0005127279982843902,
+            "text": "[SEMANTIC_QUERYING] EXPLORING \u2192 SEMANTIC_QUERYING"
+          },
+          {
+            "elapsed_s": 0.0006738679985573981,
+            "text": "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle"
+          },
+          {
+            "elapsed_s": 0.41178095499708434,
+            "text": "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'Move to the red object I can sit on.'"
+          },
+          {
+            "elapsed_s": 1.3262936929968419,
+            "text": "[SEMANTIC_NAV] SEMANTIC_QUERYING \u2192 SEMANTIC_NAV"
+          },
+          {
+            "elapsed_s": 1.3266447919995699,
+            "text": "[SEMANTIC_NAV] target selected: chair_0 (chair) at (0.85, 0.73) \u2014 waiting for goal pose"
+          },
+          {
+            "elapsed_s": 1.3269417009978497,
+            "text": "[SEMANTIC_NAV] goal pose received: (0.38, 0.56) in map \u2014 sending to Nav2"
+          },
+          {
+            "elapsed_s": 1.3278476279992901,
+            "text": "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving"
+          },
+          {
+            "elapsed_s": 7.638325443997019,
+            "text": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED"
+          },
+          {
+            "elapsed_s": 8.92674205000003,
+            "text": "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+          },
+          {
+            "elapsed_s": 10.61494383599711,
+            "text": "[EXPLORING] TARGET_REACHED \u2192 EXPLORING"
+          },
+          {
+            "elapsed_s": 10.61517870500029,
+            "text": "[EXPLORING] exploration resumed"
+          }
+        ],
+        "exploration_resumed": true,
+        "map_world_alignment": "SE2 from terminal robot TF and immediately queried Gazebo pose",
+        "selected_world": {
+          "x": 0.8555588716392124,
+          "y": 0.7317223359776308
+        },
+        "matched_entity": "demo_red_chair",
+        "selection_correct": true,
+        "localization_error_m": 0.35114317636941783,
+        "final_distance_m": 1.0918812554815656,
+        "all_final_distances_m": {
+          "demo_red_chair": 1.0918812554815656,
+          "demo_blue_chair": 1.628543360206292
+        },
+        "localization_pass": true,
+        "arrival_pass": true,
+        "pass": true
+      },
+      {
+        "utc": "2026-10-10T03:38:14.038469+00:00",
+        "command": "Move to the blue chair.",
+        "mode": "locateanything",
+        "expected_entity": "demo_blue_chair",
+        "note": "Final command 2, same simulation/backend as red command; no resets. Target absent from current camera; historical view required.",
+        "ros_domain_id": "49",
+        "gazebo_master_uri": "http://127.0.0.1:11349",
+        "expected_id": null,
+        "errors": [],
+        "criterion_m": 1.2,
+        "localization_tolerance_m": 0.5,
+        "landmarks_before": [],
+        "terminal_elapsed_s": 6.411679445998743,
+        "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+        "robot_map": {
+          "x": 0.563283094152705,
+          "y": -0.019955528102619892,
+          "yaw": -1.320419597829655,
+          "stamp_sec": 118.001
+        },
+        "robot_world": {
+          "x": 0.564275,
+          "y": -0.019765,
+          "yaw": -1.30922
+        },
+        "robot_sample_duration_s": 0.5181054220010992,
+        "truth_world": {
+          "demo_red_chair": {
+            "x": 1.2,
+            "y": 0.8,
+            "yaw": -1.0
+          },
+          "demo_blue_chair": {
+            "x": 1.2,
+            "y": -0.8,
+            "yaw": -1.0
+          }
+        },
+        "truth_requeries": [],
+        "image": ".runtime/yolo_free_memory/accepted_sequence/blue_selected.png",
+        "image_topic": "/locateanything/debug_image",
+        "image_stamp_sec": 45.485,
+        "image_at_selection": true,
+        "selected": {
+          "success": true,
+          "query_text": "Move to the blue chair.",
+          "object_id": "chair_1",
+          "semantic_name": "chair",
+          "detector_label": "chair",
+          "frame": "map",
+          "image_or_query_stamp_sec": 45.485,
+          "x": 0.7764819499468648,
+          "y": -0.6912055881175716,
+          "status": "selected from visual memory view_0; confidence is transport-only"
+        },
+        "statuses": [
+          {
+            "elapsed_s": 0.0005687579978257418,
+            "text": "[SEMANTIC_QUERYING] EXPLORING \u2192 SEMANTIC_QUERYING"
+          },
+          {
+            "elapsed_s": 0.0007372379986918531,
+            "text": "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle"
+          },
+          {
+            "elapsed_s": 0.4859757800004445,
+            "text": "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'Move to the blue chair.'"
+          },
+          {
+            "elapsed_s": 1.3994246490001387,
+            "text": "[SEMANTIC_NAV] SEMANTIC_QUERYING \u2192 SEMANTIC_NAV"
+          },
+          {
+            "elapsed_s": 1.4000081769991084,
+            "text": "[SEMANTIC_NAV] target selected: chair_1 (chair) at (0.78, -0.69) \u2014 waiting for goal pose"
+          },
+          {
+            "elapsed_s": 1.4000906969995413,
+            "text": "[SEMANTIC_NAV] goal pose received: (0.54, -0.25) in map \u2014 sending to Nav2"
+          },
+          {
+            "elapsed_s": 1.4009154439991107,
+            "text": "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving"
+          },
+          {
+            "elapsed_s": 6.411643076000473,
+            "text": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED"
+          },
+          {
+            "elapsed_s": 7.737934535998647,
+            "text": "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+          },
+          {
+            "elapsed_s": 9.391347446999134,
+            "text": "[EXPLORING] TARGET_REACHED \u2192 EXPLORING"
+          },
+          {
+            "elapsed_s": 9.391494966999744,
+            "text": "[EXPLORING] exploration resumed"
+          }
+        ],
+        "exploration_resumed": true,
+        "map_world_alignment": "SE2 from terminal robot TF and immediately queried Gazebo pose",
+        "selected_world": {
+          "x": 0.7849780586188617,
+          "y": -0.6885852711478581
+        },
+        "matched_entity": "demo_blue_chair",
+        "selection_correct": true,
+        "localization_error_m": 0.42971671323438804,
+        "final_distance_m": 1.0064357559476909,
+        "all_final_distances_m": {
+          "demo_red_chair": 1.0373817671667456,
+          "demo_blue_chair": 1.0064357559476909
+        },
+        "localization_pass": true,
+        "arrival_pass": true,
+        "pass": true
+      }
+    ],
+    "selections": [
+      {
+        "state": "selected",
+        "mode": "locateanything",
+        "request_id": 1,
+        "command": "Move to the red object I can sit on.",
+        "image_stamp_ns": 45485000000,
+        "image_frame": "camera_rgb_optical_frame",
+        "scan_stamp_ns": 45401000000,
+        "scan_frame": "base_scan",
+        "camera_info_stamp_ns": 45485000000,
+        "optical_frame": "camera_rgb_optical_frame",
+        "scan_to_map_translation": {
+          "x": -1.2654155540862124,
+          "y": -3.5053418306199134e-06,
+          "z": 0.13199327654100232
+        },
+        "scan_to_map_quaternion": {
+          "x": 3.5982059317417795e-06,
+          "y": 2.3401473012205935e-07,
+          "z": 3.080723167244404e-05,
+          "w": 0.9999999995189564
+        },
+        "bearing_rad": 0.3307124410843169,
+        "range_m": 2.2411935329437256,
+        "scan_index": 19,
+        "valid_scan_rays": 5,
+        "map_to_odom_stamp_ns": 74001000000,
+        "answer": "<ref>the red object I can sit on</ref><box><62><21><372><548></box><|im_end|>",
+        "prompt": "Locate a single instance that matches the following description: the red object I can sit on.",
+        "box_xyxy": [
+          39.68,
+          10.08,
+          238.08,
+          263.04
+        ],
+        "target_map": {
+          "x": 0.8542856404557103,
+          "y": 0.7278806186424052,
+          "z": 0.13199752213190338
+        },
+        "object_id": "chair_0",
+        "inference_seconds": 0.17390429999795742,
+        "observation_age_sec": 28.415,
+        "view_id": "view_0",
+        "source": "visual_memory",
+        "query_kind": "description",
+        "historical_view": true,
+        "query_robot_odom": [
+          -1.2023375207208105,
+          1.81494203511725e-06,
+          9.986527475853178e-05
+        ],
+        "observation_robot_odom": [
+          -1.2014186670087552,
+          1.3210347183321088e-06,
+          6.179439979746919e-05
+        ],
+        "confidence_kind": "transport_placeholder_not_model_confidence"
+      },
+      {
+        "state": "selected",
+        "mode": "locateanything",
+        "request_id": 2,
+        "command": "Move to the blue chair.",
+        "image_stamp_ns": 45485000000,
+        "image_frame": "camera_rgb_optical_frame",
+        "scan_stamp_ns": 45401000000,
+        "scan_frame": "base_scan",
+        "camera_info_stamp_ns": 45485000000,
+        "optical_frame": "camera_rgb_optical_frame",
+        "scan_to_map_translation": {
+          "x": -1.2654155540862124,
+          "y": -3.5053418306199134e-06,
+          "z": 0.13199327654100232
+        },
+        "scan_to_map_quaternion": {
+          "x": 3.5982059317417795e-06,
+          "y": 2.3401473012205935e-07,
+          "z": 3.080723167244404e-05,
+          "w": 0.9999999995189564
+        },
+        "bearing_rad": -0.3263493740734837,
+        "range_m": 2.155547857284546,
+        "scan_index": 341,
+        "valid_scan_rays": 5,
+        "map_to_odom_stamp_ns": 113001000000,
+        "answer": "<ref>the blue chair</ref><box><603><21><961><550></box><|im_end|>",
+        "prompt": "Locate a single instance that matches the following description: the blue chair.",
+        "box_xyxy": [
+          385.92,
+          10.08,
+          615.04,
+          264.0
+        ],
+        "target_map": {
+          "x": 0.7764819499468648,
+          "y": -0.6912055881175716,
+          "z": 0.12354056283501459
+        },
+        "object_id": "chair_1",
+        "inference_seconds": 0.13381181500153616,
+        "observation_age_sec": 67.515,
+        "view_id": "view_0",
+        "source": "visual_memory",
+        "query_kind": "description",
+        "historical_view": true,
+        "query_robot_odom": [
+          0.16270011467618192,
+          0.45577648609727184,
+          0.45133225717062414
+        ],
+        "observation_robot_odom": [
+          -1.2014186670087552,
+          1.3210347183321088e-06,
+          6.179439979746919e-05
+        ],
+        "confidence_kind": "transport_placeholder_not_model_confidence"
+      }
+    ],
+    "development_attempts": [
+      {
+        "utc": "2026-10-10T03:33:39.527851+00:00",
+        "command": "Move to the red object I can sit on.",
+        "mode": "locateanything",
+        "expected_entity": "demo_red_chair",
+        "note": "Independent LocateAnything memory; no YOLO; uninterrupted red then blue session, command 1.",
+        "ros_domain_id": "49",
+        "gazebo_master_uri": "http://127.0.0.1:11349",
+        "expected_id": null,
+        "errors": [],
+        "criterion_m": 1.2,
+        "localization_tolerance_m": 0.5,
+        "landmarks_before": [],
+        "terminal_elapsed_s": 7.807805954002106,
+        "terminal": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED",
+        "robot_map": {
+          "x": 0.14185456568747434,
+          "y": 0.4515082883273547,
+          "yaw": 0.42864168019403004,
+          "stamp_sec": 181.804
+        },
+        "robot_world": {
+          "x": 0.147625,
+          "y": 0.454144,
+          "yaw": 0.432438
+        },
+        "robot_sample_duration_s": 0.44597821600109455,
+        "truth_world": {
+          "demo_red_chair": {
+            "x": 1.2,
+            "y": 0.8,
+            "yaw": -1.0
+          },
+          "demo_blue_chair": {
+            "x": 1.2,
+            "y": -0.8,
+            "yaw": -1.0
+          }
+        },
+        "truth_requeries": [],
+        "image": ".runtime/yolo_free_memory/red_selected.png",
+        "image_topic": "/locateanything/debug_image",
+        "image_stamp_sec": 156.589,
+        "image_at_selection": true,
+        "selected": {
+          "success": true,
+          "query_text": "Move to the red object I can sit on.",
+          "object_id": "chair_0",
+          "semantic_name": "chair",
+          "detector_label": "chair",
+          "frame": "map",
+          "image_or_query_stamp_sec": 156.589,
+          "x": 0.8364472021818706,
+          "y": 0.7182625629949693,
+          "status": "selected from visual memory view_0; confidence is transport-only"
+        },
+        "statuses": [
+          {
+            "elapsed_s": 0.0008223580007324927,
+            "text": "[SEMANTIC_QUERYING] EXPLORING \u2192 SEMANTIC_QUERYING"
+          },
+          {
+            "elapsed_s": 0.0009801170017453842,
+            "text": "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle"
+          },
+          {
+            "elapsed_s": 0.48270122300164076,
+            "text": "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'Move to the red object I can sit on.'"
+          },
+          {
+            "elapsed_s": 1.3957974740005739,
+            "text": "[SEMANTIC_NAV] SEMANTIC_QUERYING \u2192 SEMANTIC_NAV"
+          },
+          {
+            "elapsed_s": 1.3961152830015635,
+            "text": "[SEMANTIC_NAV] target selected: chair_0 (chair) at (0.84, 0.72) \u2014 waiting for goal pose"
+          },
+          {
+            "elapsed_s": 1.3963368920012726,
+            "text": "[SEMANTIC_NAV] goal pose received: (0.36, 0.55) in map \u2014 sending to Nav2"
+          },
+          {
+            "elapsed_s": 1.3971381600022141,
+            "text": "[SEMANTIC_NAV] Nav2 goal accepted \u2014 robot is moving"
+          },
+          {
+            "elapsed_s": 7.807771944000706,
+            "text": "[TARGET_REACHED] SEMANTIC_NAV \u2192 TARGET_REACHED"
+          },
+          {
+            "elapsed_s": 9.062325475999387,
+            "text": "[TARGET_REACHED] Nav2 goal succeeded \u2014 target reached"
+          },
+          {
+            "elapsed_s": 10.787253547001455,
+            "text": "[EXPLORING] TARGET_REACHED \u2192 EXPLORING"
+          },
+          {
+            "elapsed_s": 10.787475756002095,
+            "text": "[EXPLORING] exploration resumed"
+          }
+        ],
+        "exploration_resumed": true,
+        "map_world_alignment": "SE2 from terminal robot TF and immediately queried Gazebo pose",
+        "selected_world": {
+          "x": 0.8411999491467901,
+          "y": 0.7235332418819083
+        },
+        "matched_entity": "demo_red_chair",
+        "selection_correct": true,
+        "localization_error_m": 0.36685779477797215,
+        "final_distance_m": 1.1077497521376387,
+        "all_final_distances_m": {
+          "demo_red_chair": 1.1077497521376387,
+          "demo_blue_chair": 1.6371836529116093
+        },
+        "localization_pass": true,
+        "arrival_pass": true,
+        "pass": true
+      },
+      {
+        "utc": "2026-10-10T03:34:07.057650+00:00",
+        "command": "Move to the blue chair.",
+        "mode": "locateanything",
+        "expected_entity": "demo_blue_chair",
+        "note": "Command 2 of same red then blue session. No reset or backend restart after command 1; current camera saved before_blue_live.png.",
+        "ros_domain_id": "49",
+        "gazebo_master_uri": "http://127.0.0.1:11349",
+        "expected_id": null,
+        "errors": [],
+        "criterion_m": 1.2,
+        "localization_tolerance_m": 0.5,
+        "landmarks_before": [],
+        "terminal_elapsed_s": 1.754023748999316,
+        "terminal": "[TARGET_FAILED] SEMANTIC_QUERYING \u2192 TARGET_FAILED",
+        "robot_map": {
+          "x": 0.14699108215348936,
+          "y": 0.4538535877981077,
+          "yaw": 0.4326720533424308,
+          "stamp_sec": 203.292
+        },
+        "robot_world": {
+          "x": 0.146992,
+          "y": 0.453851,
+          "yaw": 0.432673
+        },
+        "robot_sample_duration_s": 0.41602491099911276,
+        "truth_world": {
+          "demo_red_chair": {
+            "x": 1.2,
+            "y": 0.8,
+            "yaw": -1.0
+          },
+          "demo_blue_chair": {
+            "x": 1.2,
+            "y": -0.8,
+            "yaw": -1.0
+          }
+        },
+        "truth_requeries": [],
+        "image": ".runtime/yolo_free_memory/blue_selected.png",
+        "image_topic": "/locateanything/debug_image",
+        "image_stamp_sec": 156.589,
+        "image_at_selection": false,
+        "selected": {
+          "success": false,
+          "query_text": "Move to the blue chair.",
+          "object_id": "",
+          "semantic_name": "",
+          "detector_label": "",
+          "frame": "map",
+          "image_or_query_stamp_sec": 0.0,
+          "x": 0.0,
+          "y": 0.0,
+          "status": "retained views gave conflicting targets; use a more specific description or object ID"
+        },
+        "statuses": [
+          {
+            "elapsed_s": 0.0006836180000391323,
+            "text": "[SEMANTIC_QUERYING] EXPLORING \u2192 SEMANTIC_QUERYING"
+          },
+          {
+            "elapsed_s": 0.0008784970013948623,
+            "text": "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle"
+          },
+          {
+            "elapsed_s": 0.45312416100205155,
+            "text": "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'Move to the blue chair.'"
+          },
+          {
+            "elapsed_s": 1.754000578999694,
+            "text": "[TARGET_FAILED] SEMANTIC_QUERYING \u2192 TARGET_FAILED"
+          },
+          {
+            "elapsed_s": 2.9779886230026023,
+            "text": "[TARGET_FAILED] query failed: retained views gave conflicting targets; use a more specific description or object ID"
+          },
+          {
+            "elapsed_s": 4.754079887999978,
+            "text": "[EXPLORING] TARGET_FAILED \u2192 EXPLORING"
+          },
+          {
+            "elapsed_s": 4.754301678000047,
+            "text": "[EXPLORING] exploration resumed"
+          }
+        ],
+        "exploration_resumed": true,
+        "pass": false
+      }
+    ],
+    "missing_id_check": {
+      "command": "go to person 99",
+      "results": [
+        {
+          "success": false,
+          "status": "person_99 not in visual memory"
+        }
+      ],
+      "goal_pose_count": 0,
+      "pass": true
+    }
+  }
+}

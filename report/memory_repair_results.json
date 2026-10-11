@@ -1,0 +1,704 @@
+{
+  "recorded_utc": "2026-10-10T07:13:11.911356+00:00",
+  "scope": "Local debugging of eight-object warehouse memory and exploration; not a controlled accuracy or speed benchmark.",
+  "outcome": "Repeated-memory and exploration defects repaired; residual foreground occlusion is safely marked conflicted, so the final memory has 7 usable instances out of 8.",
+  "pipeline": "LocateAnything native multi-class inventory + RGB/2D LiDAR/TF + visual memory + SLAM/Nav2; no YOLO or baseline detector/localizer/memory/query nodes.",
+  "root_causes": [
+    "Fallback exploration continued after useful frontiers were exhausted; before run issued 21 fallback goals consuming 196.625 seconds.",
+    "Old 20-second timeout measured total goal time, not lack of navigation progress; unchanged failed regions were retried.",
+    "Box-center positions on different object surfaces split instances; image eviction could leave landmarks without retained evidence.",
+    "A background object box could be attached to foreground LiDAR returns; repeated ambiguous observations could overwrite a known class.",
+    "Low forklift forks were below the 2D scan plane; narrow wall-side frontier goals also caused physical blocking."
+  ],
+  "repairs": [
+    "Bound bootstrap fallback, use progress-aware timeouts, require changed local map for failed-area retries, and distinguish blocked robot from exploration completion.",
+    "Choose reachable known-free low-cost frontier standoff points; add matching visible/collision forklift pallet and IMU tilt checks.",
+    "Run one native multi-class inventory per retained view with strict class/box pairing.",
+    "Validate actual projected LiDAR supports, overlapping instance boxes, connected returns and continuous background planes.",
+    "Associate observations through retained odom-frame surface evidence; preserve same-view distinct instances and stable IDs.",
+    "Retain useful view evidence, remove no-evidence tracks, reject all selections of persistent class-conflicted tracks, and report queue state accurately."
+  ],
+  "exploration": {
+    "timing_basis": "First accepted exploration navigation goal to natural exploration stop; excludes model/startup warmup.",
+    "before_seconds": 553.9944055080414,
+    "after_seconds": 323.99671959877014,
+    "before_goals": 50,
+    "after_goals": 31,
+    "before_fallback_goals": 21,
+    "after_bootstrap_fallback_goals": 1,
+    "before_timeouts": 6,
+    "after_no_progress_timeouts": 1,
+    "after_robot_blocked": false,
+    "stop_reason": "all frontier candidates blocked or already visited; not zero raw frontier",
+    "published_frontiers_remaining": 3,
+    "common_room_coverage": {
+      "before_known": 31.7125,
+      "after_known": 29.005,
+      "known_added": 0.1075,
+      "known_lost": 2.815,
+      "known_shared": 28.8975,
+      "known_union": 31.82,
+      "before_free": 29.6475,
+      "after_free": 27.29,
+      "free_added": 0.2475,
+      "free_lost": 2.605,
+      "free_shared": 27.0425,
+      "free_union": 29.895
+    },
+    "coverage_limit": "Known area fell from 31.7125 to 29.005 m2 in a common 36 m2 region. Map alignment is approximate, routes differ, and the repaired scene includes a visible pallet. Do not claim equal coverage or a causal speedup. Completion means no usable frontier, not complete room coverage.",
+    "bounded_remaining_repeat": "Two final frontier areas were revisited once under max_visits=2 without map growth, adding about 13 seconds."
+  },
+  "memory": {
+    "before": {
+      "raw": {
+        "record_denominator": 22,
+        "conflicted_records": 0,
+        "no_view_records": 9,
+        "classification_counts": {
+          "matched": 13,
+          "wrong_class_near_physical_instance": 7,
+          "wrong_position": 2
+        },
+        "correctly_matched_records": 13,
+        "physical_instances_total": 8,
+        "physical_instances_covered": 8,
+        "covered_instances": {
+          "warehouse_forklift_0": [
+            "forklift_1",
+            "forklift_4"
+          ],
+          "warehouse_forklift_1": [
+            "forklift_0",
+            "forklift_3"
+          ],
+          "warehouse_fire_extinguisher_0": [
+            "fire_extinguisher_0"
+          ],
+          "warehouse_fire_extinguisher_1": [
+            "fire_extinguisher_4"
+          ],
+          "warehouse_fire_extinguisher_2": [
+            "fire_extinguisher_1"
+          ],
+          "warehouse_shelf_0": [
+            "storage_rack_1"
+          ],
+          "warehouse_shelf_1": [
+            "storage_rack_0",
+            "storage_rack_7"
+          ],
+          "warehouse_shelf_2": [
+            "storage_rack_3",
+            "storage_rack_5",
+            "storage_rack_8"
+          ]
+        },
+        "missing_physical_instances": [],
+        "duplicate_records": 5,
+        "duplicated_physical_instances": {
+          "warehouse_forklift_0": [
+            "forklift_1",
+            "forklift_4"
+          ],
+          "warehouse_forklift_1": [
+            "forklift_0",
+            "forklift_3"
+          ],
+          "warehouse_shelf_1": [
+            "storage_rack_0",
+            "storage_rack_7"
+          ],
+          "warehouse_shelf_2": [
+            "storage_rack_3",
+            "storage_rack_5",
+            "storage_rack_8"
+          ]
+        },
+        "by_class": {
+          "fire_extinguisher": {
+            "records": 6,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 3,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 3,
+              "wrong_class_near_physical_instance": 3
+            }
+          },
+          "forklift": {
+            "records": 7,
+            "physical_instances_total": 2,
+            "physical_instances_covered": 2,
+            "duplicate_records": 2,
+            "classification_counts": {
+              "matched": 4,
+              "wrong_class_near_physical_instance": 2,
+              "wrong_position": 1
+            }
+          },
+          "storage_rack": {
+            "records": 9,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 3,
+            "duplicate_records": 3,
+            "classification_counts": {
+              "matched": 6,
+              "wrong_class_near_physical_instance": 2,
+              "wrong_position": 1
+            }
+          }
+        }
+      },
+      "navigable": {
+        "record_denominator": 13,
+        "conflicted_records": 0,
+        "no_view_records": 0,
+        "classification_counts": {
+          "matched": 8,
+          "wrong_class_near_physical_instance": 3,
+          "wrong_position": 2
+        },
+        "correctly_matched_records": 8,
+        "physical_instances_total": 8,
+        "physical_instances_covered": 8,
+        "covered_instances": {
+          "warehouse_forklift_0": [
+            "forklift_1"
+          ],
+          "warehouse_forklift_1": [
+            "forklift_3"
+          ],
+          "warehouse_fire_extinguisher_0": [
+            "fire_extinguisher_0"
+          ],
+          "warehouse_fire_extinguisher_1": [
+            "fire_extinguisher_4"
+          ],
+          "warehouse_fire_extinguisher_2": [
+            "fire_extinguisher_1"
+          ],
+          "warehouse_shelf_0": [
+            "storage_rack_1"
+          ],
+          "warehouse_shelf_1": [
+            "storage_rack_0"
+          ],
+          "warehouse_shelf_2": [
+            "storage_rack_5"
+          ]
+        },
+        "missing_physical_instances": [],
+        "duplicate_records": 0,
+        "duplicated_physical_instances": {},
+        "by_class": {
+          "fire_extinguisher": {
+            "records": 4,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 3,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 3,
+              "wrong_class_near_physical_instance": 1
+            }
+          },
+          "forklift": {
+            "records": 3,
+            "physical_instances_total": 2,
+            "physical_instances_covered": 2,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 2,
+              "wrong_position": 1
+            }
+          },
+          "storage_rack": {
+            "records": 6,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 3,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 3,
+              "wrong_class_near_physical_instance": 2,
+              "wrong_position": 1
+            }
+          }
+        }
+      }
+    },
+    "after_exploration": {
+      "raw": {
+        "record_denominator": 8,
+        "conflicted_records": 0,
+        "no_view_records": 0,
+        "classification_counts": {
+          "matched": 8
+        },
+        "correctly_matched_records": 8,
+        "physical_instances_total": 8,
+        "physical_instances_covered": 8,
+        "covered_instances": {
+          "warehouse_forklift_0": [
+            "forklift_1"
+          ],
+          "warehouse_forklift_1": [
+            "forklift_0"
+          ],
+          "warehouse_fire_extinguisher_0": [
+            "fire_extinguisher_0"
+          ],
+          "warehouse_fire_extinguisher_1": [
+            "fire_extinguisher_2"
+          ],
+          "warehouse_fire_extinguisher_2": [
+            "fire_extinguisher_1"
+          ],
+          "warehouse_shelf_0": [
+            "storage_rack_0"
+          ],
+          "warehouse_shelf_1": [
+            "storage_rack_2"
+          ],
+          "warehouse_shelf_2": [
+            "storage_rack_1"
+          ]
+        },
+        "missing_physical_instances": [],
+        "duplicate_records": 0,
+        "duplicated_physical_instances": {},
+        "by_class": {
+          "fire_extinguisher": {
+            "records": 3,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 3,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 3
+            }
+          },
+          "forklift": {
+            "records": 2,
+            "physical_instances_total": 2,
+            "physical_instances_covered": 2,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 2
+            }
+          },
+          "storage_rack": {
+            "records": 3,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 3,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 3
+            }
+          }
+        }
+      },
+      "navigable": {
+        "record_denominator": 8,
+        "conflicted_records": 0,
+        "no_view_records": 0,
+        "classification_counts": {
+          "matched": 8
+        },
+        "correctly_matched_records": 8,
+        "physical_instances_total": 8,
+        "physical_instances_covered": 8,
+        "covered_instances": {
+          "warehouse_forklift_0": [
+            "forklift_1"
+          ],
+          "warehouse_forklift_1": [
+            "forklift_0"
+          ],
+          "warehouse_fire_extinguisher_0": [
+            "fire_extinguisher_0"
+          ],
+          "warehouse_fire_extinguisher_1": [
+            "fire_extinguisher_2"
+          ],
+          "warehouse_fire_extinguisher_2": [
+            "fire_extinguisher_1"
+          ],
+          "warehouse_shelf_0": [
+            "storage_rack_0"
+          ],
+          "warehouse_shelf_1": [
+            "storage_rack_2"
+          ],
+          "warehouse_shelf_2": [
+            "storage_rack_1"
+          ]
+        },
+        "missing_physical_instances": [],
+        "duplicate_records": 0,
+        "duplicated_physical_instances": {},
+        "by_class": {
+          "fire_extinguisher": {
+            "records": 3,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 3,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 3
+            }
+          },
+          "forklift": {
+            "records": 2,
+            "physical_instances_total": 2,
+            "physical_instances_covered": 2,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 2
+            }
+          },
+          "storage_rack": {
+            "records": 3,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 3,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 3
+            }
+          }
+        }
+      }
+    },
+    "after_two_commands": {
+      "raw": {
+        "record_denominator": 8,
+        "conflicted_records": 1,
+        "no_view_records": 0,
+        "classification_counts": {
+          "matched": 8
+        },
+        "correctly_matched_records": 8,
+        "physical_instances_total": 8,
+        "physical_instances_covered": 8,
+        "covered_instances": {
+          "warehouse_forklift_0": [
+            "forklift_1"
+          ],
+          "warehouse_forklift_1": [
+            "forklift_0"
+          ],
+          "warehouse_fire_extinguisher_0": [
+            "fire_extinguisher_0"
+          ],
+          "warehouse_fire_extinguisher_1": [
+            "fire_extinguisher_2"
+          ],
+          "warehouse_fire_extinguisher_2": [
+            "fire_extinguisher_1"
+          ],
+          "warehouse_shelf_0": [
+            "storage_rack_0"
+          ],
+          "warehouse_shelf_1": [
+            "storage_rack_2"
+          ],
+          "warehouse_shelf_2": [
+            "storage_rack_1"
+          ]
+        },
+        "missing_physical_instances": [],
+        "duplicate_records": 0,
+        "duplicated_physical_instances": {},
+        "by_class": {
+          "fire_extinguisher": {
+            "records": 3,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 3,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 3
+            }
+          },
+          "forklift": {
+            "records": 2,
+            "physical_instances_total": 2,
+            "physical_instances_covered": 2,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 2
+            }
+          },
+          "storage_rack": {
+            "records": 3,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 3,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 3
+            }
+          }
+        }
+      },
+      "navigable": {
+        "record_denominator": 7,
+        "conflicted_records": 0,
+        "no_view_records": 0,
+        "classification_counts": {
+          "matched": 7
+        },
+        "correctly_matched_records": 7,
+        "physical_instances_total": 8,
+        "physical_instances_covered": 7,
+        "covered_instances": {
+          "warehouse_forklift_0": [
+            "forklift_1"
+          ],
+          "warehouse_forklift_1": [
+            "forklift_0"
+          ],
+          "warehouse_fire_extinguisher_0": [
+            "fire_extinguisher_0"
+          ],
+          "warehouse_fire_extinguisher_1": [
+            "fire_extinguisher_2"
+          ],
+          "warehouse_fire_extinguisher_2": [
+            "fire_extinguisher_1"
+          ],
+          "warehouse_shelf_0": [
+            "storage_rack_0"
+          ],
+          "warehouse_shelf_1": [
+            "storage_rack_2"
+          ]
+        },
+        "missing_physical_instances": [
+          "warehouse_shelf_2"
+        ],
+        "duplicate_records": 0,
+        "duplicated_physical_instances": {},
+        "by_class": {
+          "fire_extinguisher": {
+            "records": 3,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 3,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 3
+            }
+          },
+          "forklift": {
+            "records": 2,
+            "physical_instances_total": 2,
+            "physical_instances_covered": 2,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 2
+            }
+          },
+          "storage_rack": {
+            "records": 2,
+            "physical_instances_total": 3,
+            "physical_instances_covered": 2,
+            "duplicate_records": 0,
+            "classification_counts": {
+              "matched": 2
+            }
+          }
+        }
+      }
+    }
+  },
+  "memory_evaluation_method": {
+    "before_alignment": "Unverified identity approximation",
+    "after_alignment": "Stationary robot TF/Gazebo alignment, used only for offline scoring",
+    "match": "Same-class oriented XY bounding footprint distance <=0.25 m, plus manual source-image checks",
+    "limit": "Approximate occupied footprints are not detailed mesh-surface ground truth. Usable means retained evidence and no conflict, not guaranteed navigation success."
+  },
+  "navigation": {
+    "same_session_no_reset": true,
+    "attempts": [
+      {
+        "command": "go to fire_extinguisher_2",
+        "terminal": "[TARGET_REACHED] SEMANTIC_NAV → TARGET_REACHED",
+        "statuses": [
+          {
+            "elapsed_s": 0.000703506993886549,
+            "text": "[SEMANTIC_QUERYING] EXPLORING → SEMANTIC_QUERYING"
+          },
+          {
+            "elapsed_s": 0.0007918069968582131,
+            "text": "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle"
+          },
+          {
+            "elapsed_s": 0.43580780799675267,
+            "text": "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'go to fire_extinguisher_2'"
+          },
+          {
+            "elapsed_s": 1.1665712969988817,
+            "text": "[SEMANTIC_NAV] SEMANTIC_QUERYING → SEMANTIC_NAV"
+          },
+          {
+            "elapsed_s": 1.166946105993702,
+            "text": "[SEMANTIC_NAV] target selected: fire_extinguisher_2 (fire_extinguisher) at (2.57, 0.22) — waiting for goal pose"
+          },
+          {
+            "elapsed_s": 1.1673569639970083,
+            "text": "[SEMANTIC_NAV] goal pose received: (2.08, 0.10) in map — sending to Nav2"
+          },
+          {
+            "elapsed_s": 1.1689711969956988,
+            "text": "[SEMANTIC_NAV] Nav2 goal accepted — robot is moving"
+          },
+          {
+            "elapsed_s": 5.228763243998401,
+            "text": "[TARGET_REACHED] SEMANTIC_NAV → TARGET_REACHED"
+          },
+          {
+            "elapsed_s": 5.229002762993332,
+            "text": "[TARGET_REACHED] Nav2 goal succeeded — target reached"
+          }
+        ],
+        "exploration_events": [
+          false
+        ],
+        "selection": {
+          "success": true,
+          "id": "fire_extinguisher_2",
+          "x": 2.565220497191834,
+          "y": 0.22122574137838713,
+          "status": "selected from visual memory view_44; confidence is transport-only"
+        },
+        "held_seconds": 11.029038405999017,
+        "max_translation_m": 0.00032659707431035684,
+        "max_yaw_change_rad": 1.4459828691248955e-05,
+        "exploration_resumed": false,
+        "pass": true
+      },
+      {
+        "command": "go to storage_rack_1",
+        "terminal": "[TARGET_REACHED] SEMANTIC_NAV → TARGET_REACHED",
+        "statuses": [
+          {
+            "elapsed_s": 0.0008528670005034655,
+            "text": "[SEMANTIC_QUERYING] TARGET_REACHED → SEMANTIC_QUERYING"
+          },
+          {
+            "elapsed_s": 0.0010994760014000349,
+            "text": "[SEMANTIC_QUERYING] waiting for exploration cancellation and Nav2 idle"
+          },
+          {
+            "elapsed_s": 0.4830950670002494,
+            "text": "[SEMANTIC_QUERYING] Nav2 idle; forwarded command: 'go to storage_rack_1'"
+          },
+          {
+            "elapsed_s": 1.2134688400037703,
+            "text": "[SEMANTIC_NAV] SEMANTIC_QUERYING → SEMANTIC_NAV"
+          },
+          {
+            "elapsed_s": 1.2140286569992895,
+            "text": "[SEMANTIC_NAV] target selected: storage_rack_1 (storage_rack) at (-0.70, -0.04) — waiting for goal pose"
+          },
+          {
+            "elapsed_s": 1.214398786003585,
+            "text": "[SEMANTIC_NAV] goal pose received: (-0.20, -0.03) in map — sending to Nav2"
+          },
+          {
+            "elapsed_s": 1.2152926019989536,
+            "text": "[SEMANTIC_NAV] Nav2 goal accepted — robot is moving"
+          },
+          {
+            "elapsed_s": 15.125809003999166,
+            "text": "[TARGET_REACHED] SEMANTIC_NAV → TARGET_REACHED"
+          },
+          {
+            "elapsed_s": 15.125930604001042,
+            "text": "[TARGET_REACHED] Nav2 goal succeeded — target reached"
+          }
+        ],
+        "exploration_events": [
+          false
+        ],
+        "selection": {
+          "success": true,
+          "id": "storage_rack_1",
+          "x": -0.6986674643048713,
+          "y": -0.03634401865046297,
+          "status": "selected from visual memory view_191; confidence is transport-only"
+        },
+        "held_seconds": 11.030979547002062,
+        "max_translation_m": 0.00032516469539815157,
+        "max_yaw_change_rad": 1.6205152584714e-05,
+        "exploration_resumed": false,
+        "pass": true
+      }
+    ],
+    "passed": 2,
+    "attempted": 2,
+    "scope": "Two selected memory IDs reached with no automatic exploration resume. Hold observations lasted 11 seconds each; the configured wait is indefinite, not an 11-second timer. This does not validate all eight approach poses."
+  },
+  "remaining_occlusion": {
+    "view_id": "view_277",
+    "track": "storage_rack_1",
+    "observed": "Camera shows a forklift behind the central rack; inventory omitted the foreground rack. 2D laser supports hit the rack while the box refers to the forklift.",
+    "safe_result": "Original storage_rack_1 ID and class retained; conflict persisted and this track is excluded from future selection. No third forklift or duplicate rack was added.",
+    "final_raw_instances": 8,
+    "final_usable_instances": 7,
+    "raw_model_answer": "<ref>forklift</ref><box><360><0><708><529></box><ref>fire extinguisher</ref><box>None</box><ref>storage rack</ref><box>None</box><|im_end|>",
+    "constraint": "Original RGB plus 2D laser retained. No depth camera added; residual ambiguous ownership is not claimed solved."
+  },
+  "inventory_latency": {
+    "calls": 204,
+    "median_seconds": 0.3956663954995747,
+    "minimum_seconds": 0.34834722700179555,
+    "maximum_seconds": 0.6996867810012191,
+    "scope": "Catalog model inference only, includes exploration and two navigation commands; not end-to-end latency."
+  },
+  "validation": {
+    "python_regression_tests_passed": 341,
+    "cpp_ctest_passed": 2,
+    "colcon_build": "passed",
+    "git_diff_check": "passed before this result/document update; checked again on finalization"
+  },
+  "development_runs": {
+    "after_v1": "Interrupted development run; not counted as completed.",
+    "after_v2": "Exploration completed; second navigation exposed a single-ray/occlusion problem. Preserved as failure.",
+    "after_v3": "Physical tilt on low forklift fork; interrupted and repaired visible geometry/IMU guards.",
+    "after_v4": "Narrow-corridor robot blockage was misreported as completion; also exposed class poisoning. Preserved as failure, not final success.",
+    "after_v5": "Final frozen fresh exploration plus two sequential arrivals; one post-navigation memory conflict remains."
+  },
+  "sources": [
+    {
+      "path": ".runtime/memory_repair/before/exploration_summary.json",
+      "sha256": "09332823ed1ed12fa5c548e81735248d17f6904659396b914661511de93acb7f"
+    },
+    {
+      "path": ".runtime/memory_repair/memory_evaluation.json",
+      "sha256": "424b597ecde01f6750d760164460e7f98c392801fcaa2cd82c7d5f7a5810684e"
+    },
+    {
+      "path": ".runtime/memory_repair/after_v5/exploration_complete/summary.json",
+      "sha256": "e3051f280fc5f662a1f4b128c7c763398e41a761040c47809d07576ce9722c3b"
+    },
+    {
+      "path": ".runtime/memory_repair/after_v5/exploration_complete/map_comparison.json",
+      "sha256": "c52927470025bba3c6f6190c0c4cf63bb122333b708d55cf94741d6930264f75"
+    },
+    {
+      "path": ".runtime/memory_repair/after_v5/exploration_complete/memory_evaluation_aligned.json",
+      "sha256": "32852456b3be66f178917a890e51e73cc9e57462325d6ac52563b0f36be27089"
+    },
+    {
+      "path": ".runtime/memory_repair/after_v5/after_navigation/memory_evaluation_aligned.json",
+      "sha256": "49ca6898ed94d5ab091c3c00cdc3819acacddab82bbf78358f73fc12425c0ec7"
+    },
+    {
+      "path": ".runtime/memory_repair/after_v5/navigation_results.json",
+      "sha256": "c0bdebc8de31baaa3fa8ab282a577ad24d8bbe13026300a059c435db8e657da7"
+    },
+    {
+      "path": ".runtime/memory_repair/after_v5/evidence/view_277_source.png",
+      "sha256": "c84c995bf48eb94fcfb82525063efac4d541710cf4e926130b88ae7925125942"
+    },
+    {
+      "path": ".runtime/memory_repair/after_v5/evidence/view_277_sensors.json",
+      "sha256": "c364b7fadb9c84bcef022aa2aab59cb24982adc47ece2bf3686bb700f13c6935"
+    }
+  ]
+}

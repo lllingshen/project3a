@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.6">
+  <model name="la_warehouse_extinguisher">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://la_warehouse_extinguisher/meshes/extinguisher.dae</uri>
+            <scale>1.8 1.8 1.8</scale>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://la_warehouse_extinguisher/meshes/extinguisher.dae</uri>
+            <scale>1.8 1.8 1.8</scale>
+          </mesh>
+        </geometry>
+      </visual>
+      <pose>0 0 0.001 0 0 0</pose>
+    </link>
+  </model>
+</sdf>
