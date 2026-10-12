@@ -40,7 +40,7 @@
 <text x="750.0" y="342" text-anchor="middle" font-size="20" font-weight="normal" fill="#d8f2ef">LocateAnything → labelled 2D boxes</text>
 <rect x="552" y="398" width="396" height="78" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
 <text x="750.0" y="428" text-anchor="middle" font-size="22" font-weight="normal" fill="#1f2328">Boxes + labels</text>
-<text x="750.0" y="457" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">person, trash can, chair</text>
+<text x="750.0" y="457" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">person, warehouse objects, etc.</text>
 <path d="M750,242 L750,267" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
 <path d="M750,366 L750,395" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
 <path d="M948,437 L990,437 L990,211 L1033,211" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
