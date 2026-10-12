@@ -16,6 +16,9 @@ that an unseen object will be found.
 
 ![LocateAnything workflow: explore, recognize objects, remember them, and go to the object you ask for](docs/media/locateanything_overview.svg)
 
+The diagram shows the default setup: a depth camera locates objects;
+LiDAR is used for mapping and navigation.
+
 Adapted from the [original course diagram](https://github.com/YiyuchenHu/turtlebot3-gazebo-navigation-hw/blob/main/docs/media/system_overview.svg).
 [Full-resolution PNG](docs/media/locateanything_overview.png).
 

@@ -1,17 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1080" viewBox="0 0 1500 1080" role="img" aria-labelledby="title desc" font-family="Liberation Sans, Helvetica, Arial, sans-serif">
 <title id="title">LocateAnything inside the TurtleBot3 navigation stack</title>
-<desc id="desc">Adapted from Yiyuchen Hu's course system overview. The robot explores and builds a map. LocateAnything recognizes objects in camera images. The camera measures their distance, and memory keeps their IDs, pictures, and map positions. A command asks the robot to go to X. LocateAnything matches the description to saved pictures, or memory rules look up an ID and class. The robot finds a clear spot near the selected object, drives there with Nav2, and waits for the next command.</desc>
+<desc id="desc">Adapted from Yiyuchen Hu's course system overview. This diagram shows the default depth-camera demo. The robot explores and builds a map with LiDAR. LocateAnything outputs labelled 2D boxes from camera images. Camera depth locates the objects, and memory keeps their IDs, pictures, and map positions. A command asks the robot to go to X. LocateAnything matches the description to saved pictures, or memory rules look up an ID and class. The selected object's saved box and depth give its map position. The robot finds a clear spot nearby, drives there with Nav2, and waits for the next command.</desc>
 <!-- Layout adapted from YiyuchenHu/turtlebot3-gazebo-navigation-hw/docs/media/system_overview.svg, MIT License, Copyright (c) 2026 Yiyuchen Hu. -->
 <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,4 L0,8 Z" fill="#222222"/></marker></defs>
 <rect width="1500" height="1080" fill="#ffffff"/>
 <text x="40" y="52" text-anchor="start" font-size="34" font-weight="bold" fill="#1f2328">LocateAnything inside the TurtleBot3 navigation stack</text>
 <text x="40" y="84" text-anchor="start" font-size="20" font-weight="normal" fill="#5c6570">Map first, query later: the robot remembers objects while it explores, then drives to the one you ask for.</text>
 <rect x="40" y="112" width="450" height="390" rx="0" fill="#fdf6d6" stroke="#e6d9a2" stroke-width="1.6"/>
-<text x="56" y="144" text-anchor="start" font-size="22" font-weight="bold" fill="#1f2328">1  Autonomous exploration</text>
+<text x="56" y="144" text-anchor="start" font-size="22" font-weight="bold" fill="#1f2328">① Autonomous exploration</text>
 <rect x="525" y="112" width="450" height="390" rx="0" fill="#fdf6d6" stroke="#e6d9a2" stroke-width="1.6"/>
-<text x="541" y="144" text-anchor="start" font-size="22" font-weight="bold" fill="#1f2328">2  Perception while exploring</text>
+<text x="541" y="144" text-anchor="start" font-size="22" font-weight="bold" fill="#1f2328">② Perception while exploring</text>
 <rect x="1010" y="112" width="450" height="390" rx="0" fill="#fdf6d6" stroke="#e6d9a2" stroke-width="1.6"/>
-<text x="1026" y="144" text-anchor="start" font-size="22" font-weight="bold" fill="#1f2328">3  Localization &amp; semantic memory</text>
+<text x="1026" y="144" text-anchor="start" font-size="22" font-weight="bold" fill="#1f2328">③ Localization &amp; semantic memory</text>
 <rect x="64" y="169" width="340" height="48" rx="24" fill="#ffffff" stroke="#222222" stroke-width="1.6"/>
 <text x="234.0" y="199" text-anchor="middle" font-size="18" font-weight="normal" fill="#1f2328">Robot spawns in an unknown room</text>
 <rect x="64" y="242" width="340" height="68" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
@@ -36,8 +36,8 @@
 <text x="750.0" y="199" text-anchor="middle" font-size="22" font-weight="normal" fill="#1f2328">RGB camera frame</text>
 <text x="750.0" y="226" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">A new view as the robot moves</text>
 <rect x="552" y="270" width="396" height="96" rx="10" fill="#147d79" stroke="#147d79" stroke-width="1.6"/>
-<text x="750.0" y="302" text-anchor="middle" font-size="25" font-weight="bold" fill="#ffffff">LocateAnything</text>
-<text x="750.0" y="342" text-anchor="middle" font-size="20" font-weight="normal" fill="#d8f2ef">Find objects in the image</text>
+<text x="750.0" y="302" text-anchor="middle" font-size="25" font-weight="bold" fill="#ffffff">Object detector</text>
+<text x="750.0" y="342" text-anchor="middle" font-size="20" font-weight="normal" fill="#d8f2ef">LocateAnything → labelled 2D boxes</text>
 <rect x="552" y="398" width="396" height="78" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
 <text x="750.0" y="428" text-anchor="middle" font-size="22" font-weight="normal" fill="#1f2328">Boxes + labels</text>
 <text x="750.0" y="457" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">person, trash can, chair</text>
@@ -45,9 +45,8 @@
 <path d="M750,366 L750,395" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
 <path d="M948,437 L990,437 L990,211 L1033,211" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
 <rect x="1036" y="170" width="396" height="85" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
-<text x="1234.0" y="198" text-anchor="middle" font-size="23" font-weight="normal" fill="#1f2328">Object localization</text>
-<text x="1234.0" y="223" text-anchor="middle" font-size="19" font-weight="normal" fill="#1f2328">Camera measures distance to the object</text>
-<text x="1234.0" y="246" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">→ position on the map</text>
+<text x="1234.0" y="204" text-anchor="middle" font-size="23" font-weight="normal" fill="#1f2328">Depth camera localizer</text>
+<text x="1234.0" y="237" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">box + camera depth → (x, y)</text>
 <rect x="1036" y="280" width="396" height="74" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
 <text x="1234.0" y="308" text-anchor="middle" font-size="22" font-weight="normal" fill="#1f2328">Short-term memory</text>
 <text x="1234.0" y="335" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">Same object across frames → one ID</text>
@@ -61,7 +60,7 @@
 <rect x="655" y="531" width="380" height="25" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1.6"/>
 <text x="845" y="550" text-anchor="middle" font-size="18" font-weight="normal" fill="#1f2328">Remembered objects on the map</text>
 <rect x="235" y="575" width="1225" height="375" rx="0" fill="#fdf6d6" stroke="#e6d9a2" stroke-width="1.6"/>
-<text x="251" y="608" text-anchor="start" font-size="23" font-weight="bold" fill="#1f2328">4  Query the map and go</text>
+<text x="251" y="608" text-anchor="start" font-size="23" font-weight="bold" fill="#1f2328">④ Query the map and go</text>
 <text x="1437" y="607" text-anchor="end" font-size="18" font-weight="normal" fill="#5c6570">Exploration paused</text>
 <text x="124" y="681" text-anchor="middle" font-size="18" font-weight="normal" fill="#5c6570">typed any time</text>
 <rect x="36" y="701" width="176" height="74" rx="35" fill="#ffffff" stroke="#222222" stroke-width="1.6"/>
@@ -81,8 +80,8 @@
 <path d="M625,738 L657,738" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
 <rect x="660" y="682" width="280" height="112" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
 <text x="800.0" y="710" text-anchor="middle" font-size="22" font-weight="normal" fill="#1f2328">Selected object</text>
-<text x="800.0" y="741" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">Use its saved picture</text>
-<text x="800.0" y="770" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">to locate it on the map</text>
+<text x="800.0" y="741" text-anchor="middle" font-size="19" font-weight="normal" fill="#1f2328">Saved box + camera depth</text>
+<text x="800.0" y="770" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">→ position on the map</text>
 <rect x="992" y="682" width="216" height="112" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
 <text x="1100.0" y="711" text-anchor="middle" font-size="21" font-weight="normal" fill="#1f2328">Approach pose</text>
 <text x="1100.0" y="743" text-anchor="middle" font-size="18" font-weight="normal" fill="#1f2328">Find a clear spot near X</text>
