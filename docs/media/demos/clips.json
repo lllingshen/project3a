@@ -1,0 +1,574 @@
+{
+  "recorded_date": "2026-10-11",
+  "timezone": "America/New_York",
+  "editing": {
+    "mp4": "Continuous trimmed footage at original speed, 1920px wide, 24 fps, H.264; added query header.",
+    "gif": "Same continuous clip at 2x speed, 1000px wide, 8 fps; speed label in header.",
+    "timing": "Cut positions use the filename start time as a wall-clock reference and were checked against the visible command sequence. Event timestamps come from the matching ROS logs.",
+    "outcomes": "Selected object and Nav2 result are log-backed observations, not a semantic accuracy score. Originals are retained outside Git."
+  },
+  "sources": [
+    {
+      "id": "colors",
+      "filename": "Screencast from 10-11-2026 08:02:08 PM.webm",
+      "sha256": "ccb8ab627d4f02eeca8e2fa38cf1d045b7a8582495b49b7fd9289b01f739ae7c",
+      "duration_seconds": 191.544028,
+      "start_time_reference_unix": 1791763328,
+      "coordinator_log": "python3_62566_1791761588517.log",
+      "selection_log": "python3_62560_1791761588512.log"
+    },
+    {
+      "id": "objects",
+      "filename": "Screencast from 10-11-2026 08:25:07 PM.webm",
+      "sha256": "897778688886b7740ae67ed3ea6b95a1e14ff47e331b9c0d32b910099f95cf9d",
+      "duration_seconds": 250.876491,
+      "start_time_reference_unix": 1791764707,
+      "coordinator_log": "python3_75996_1791764388512.log",
+      "selection_log": "python3_75990_1791764388536.log"
+    }
+  ],
+  "clips": [
+    {
+      "query": "go to person_1",
+      "issued_unix": 1791763338.506672,
+      "reached_unix": 1791763340.3569937,
+      "id": "colors-01-person-id",
+      "source": "colors",
+      "scene": "warehouse_colors",
+      "title": "Warehouse colors",
+      "number": 1,
+      "count": 6,
+      "start_seconds": 6.507,
+      "end_seconds": 15.357,
+      "selected_unix": 1791763339.782598,
+      "selected_object": "person_1",
+      "query_kind": "object_id",
+      "selection_policy": null,
+      "nav2_result": "SUCCEEDED",
+      "note": "The robot was already near person_1, so this direct-ID query involves little movement.",
+      "files": {
+        "mp4": {
+          "name": "colors-01-person-id.mp4",
+          "bytes": 298611,
+          "duration_seconds": 8.833333,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "colors-01-person-id.gif",
+          "bytes": 476419,
+          "duration_seconds": 4.38,
+          "width": 1000,
+          "height": 622,
+          "frames": 35
+        }
+      }
+    },
+    {
+      "query": "go to chair_1",
+      "issued_unix": 1791763354.8802629,
+      "reached_unix": 1791763379.159725,
+      "id": "colors-02-chair-id",
+      "source": "colors",
+      "scene": "warehouse_colors",
+      "title": "Warehouse colors",
+      "number": 2,
+      "count": 6,
+      "start_seconds": 22.88,
+      "end_seconds": 54.16,
+      "selected_unix": 1791763356.0844584,
+      "selected_object": "chair_1",
+      "query_kind": "object_id",
+      "selection_policy": null,
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "colors-02-chair-id.mp4",
+          "bytes": 2628836,
+          "duration_seconds": 31.291667,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "colors-02-chair-id.gif",
+          "bytes": 3413461,
+          "duration_seconds": 15.63,
+          "width": 1000,
+          "height": 622,
+          "frames": 125
+        }
+      }
+    },
+    {
+      "query": "go to the white object that i can sit on",
+      "issued_unix": 1791763389.443272,
+      "reached_unix": 1791763405.0563855,
+      "id": "colors-03-white-seat",
+      "source": "colors",
+      "scene": "warehouse_colors",
+      "title": "Warehouse colors",
+      "number": 3,
+      "count": 6,
+      "start_seconds": 57.443,
+      "end_seconds": 80.056,
+      "selected_unix": 1791763391.3811789,
+      "selected_object": "chair_0",
+      "query_kind": "gallery_description",
+      "selection_policy": null,
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "colors-03-white-seat.mp4",
+          "bytes": 1731472,
+          "duration_seconds": 22.625,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "colors-03-white-seat.gif",
+          "bytes": 2198826,
+          "duration_seconds": 11.38,
+          "width": 1000,
+          "height": 622,
+          "frames": 91
+        }
+      }
+    },
+    {
+      "query": "go to the blue table",
+      "issued_unix": 1791763416.2076297,
+      "reached_unix": 1791763444.1722512,
+      "id": "colors-04-blue-table",
+      "source": "colors",
+      "scene": "warehouse_colors",
+      "title": "Warehouse colors",
+      "number": 4,
+      "count": 6,
+      "start_seconds": 84.208,
+      "end_seconds": 119.172,
+      "selected_unix": 1791763417.6975117,
+      "selected_object": "table_1",
+      "query_kind": "gallery_description",
+      "selection_policy": null,
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "colors-04-blue-table.mp4",
+          "bytes": 2937264,
+          "duration_seconds": 34.958333,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "colors-04-blue-table.gif",
+          "bytes": 3696480,
+          "duration_seconds": 17.51,
+          "width": 1000,
+          "height": 622,
+          "frames": 140
+        }
+      }
+    },
+    {
+      "query": "go to the green object",
+      "issued_unix": 1791763452.6015708,
+      "reached_unix": 1791763480.4362054,
+      "id": "colors-05-green-object",
+      "source": "colors",
+      "scene": "warehouse_colors",
+      "title": "Warehouse colors",
+      "number": 5,
+      "count": 6,
+      "start_seconds": 120.602,
+      "end_seconds": 155.436,
+      "selected_unix": 1791763454.4117959,
+      "selected_object": "table_0",
+      "query_kind": "gallery_description",
+      "selection_policy": null,
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "colors-05-green-object.mp4",
+          "bytes": 3221696,
+          "duration_seconds": 34.833333,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "colors-05-green-object.gif",
+          "bytes": 4220999,
+          "duration_seconds": 17.38,
+          "width": 1000,
+          "height": 622,
+          "frames": 139
+        }
+      }
+    },
+    {
+      "query": "go to the person",
+      "issued_unix": 1791763491.9258573,
+      "reached_unix": 1791763519.380307,
+      "id": "colors-06-person",
+      "source": "colors",
+      "scene": "warehouse_colors",
+      "title": "Warehouse colors",
+      "number": 6,
+      "count": 6,
+      "start_seconds": 159.926,
+      "end_seconds": 191.544,
+      "selected_unix": 1791763493.4532506,
+      "selected_object": "person_1",
+      "query_kind": "gallery_description",
+      "selection_policy": null,
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "colors-06-person.mp4",
+          "bytes": 2738341,
+          "duration_seconds": 31.625,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "colors-06-person.gif",
+          "bytes": 3698525,
+          "duration_seconds": 15.88,
+          "width": 1000,
+          "height": 622,
+          "frames": 127
+        }
+      }
+    },
+    {
+      "query": "move to fire extinguisher 2",
+      "issued_unix": 1791764717.0418427,
+      "reached_unix": 1791764730.3014839,
+      "id": "objects-01-extinguisher-id",
+      "source": "objects",
+      "scene": "warehouse_objects",
+      "title": "Warehouse objects",
+      "number": 1,
+      "count": 9,
+      "start_seconds": 6.042,
+      "end_seconds": 25.735,
+      "selected_unix": 1791764718.2323709,
+      "selected_object": "fire_extinguisher_2",
+      "query_kind": "object_id",
+      "selection_policy": null,
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "objects-01-extinguisher-id.mp4",
+          "bytes": 950933,
+          "duration_seconds": 19.666667,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "objects-01-extinguisher-id.gif",
+          "bytes": 1266696,
+          "duration_seconds": 9.88,
+          "width": 1000,
+          "height": 622,
+          "frames": 79
+        }
+      }
+    },
+    {
+      "query": "move to the storage rack 2",
+      "issued_unix": 1791764736.7350156,
+      "reached_unix": 1791764747.6097825,
+      "id": "objects-02-rack-id",
+      "source": "objects",
+      "scene": "warehouse_objects",
+      "title": "Warehouse objects",
+      "number": 2,
+      "count": 9,
+      "start_seconds": 25.735,
+      "end_seconds": 43.61,
+      "selected_unix": 1791764737.9410262,
+      "selected_object": "storage_rack_2",
+      "query_kind": "object_id",
+      "selection_policy": null,
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "objects-02-rack-id.mp4",
+          "bytes": 850469,
+          "duration_seconds": 17.875,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "objects-02-rack-id.gif",
+          "bytes": 1065355,
+          "duration_seconds": 9.01,
+          "width": 1000,
+          "height": 622,
+          "frames": 72
+        }
+      }
+    },
+    {
+      "query": "move to the forklift 0",
+      "issued_unix": 1791764758.5043948,
+      "reached_unix": 1791764775.2166557,
+      "id": "objects-03-forklift-id",
+      "source": "objects",
+      "scene": "warehouse_objects",
+      "title": "Warehouse objects",
+      "number": 3,
+      "count": 9,
+      "start_seconds": 47.504,
+      "end_seconds": 71.217,
+      "selected_unix": 1791764759.6476498,
+      "selected_object": "forklift_0",
+      "query_kind": "object_id",
+      "selection_policy": null,
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "objects-03-forklift-id.mp4",
+          "bytes": 1410264,
+          "duration_seconds": 23.708333,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "objects-03-forklift-id.gif",
+          "bytes": 1649817,
+          "duration_seconds": 11.88,
+          "width": 1000,
+          "height": 622,
+          "frames": 95
+        }
+      }
+    },
+    {
+      "query": "move to the object that can put out fire",
+      "issued_unix": 1791764787.9354405,
+      "reached_unix": 1791764798.471425,
+      "id": "objects-04-put-out-fire",
+      "source": "objects",
+      "scene": "warehouse_objects",
+      "title": "Warehouse objects",
+      "number": 4,
+      "count": 9,
+      "start_seconds": 76.935,
+      "end_seconds": 94.471,
+      "selected_unix": 1791764790.2520196,
+      "selected_object": "fire_extinguisher_1",
+      "query_kind": "gallery_description",
+      "selection_policy": "nearest_model_matches",
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "objects-04-put-out-fire.mp4",
+          "bytes": 889530,
+          "duration_seconds": 17.541667,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "objects-04-put-out-fire.gif",
+          "bytes": 1142421,
+          "duration_seconds": 8.76,
+          "width": 1000,
+          "height": 622,
+          "frames": 70
+        }
+      }
+    },
+    {
+      "query": "move to the object that can lift things up",
+      "issued_unix": 1791764806.1732616,
+      "reached_unix": 1791764820.889211,
+      "id": "objects-05-lift-things",
+      "source": "objects",
+      "scene": "warehouse_objects",
+      "title": "Warehouse objects",
+      "number": 5,
+      "count": 9,
+      "start_seconds": 95.173,
+      "end_seconds": 116.889,
+      "selected_unix": 1791764808.4601963,
+      "selected_object": "forklift_0",
+      "query_kind": "gallery_description",
+      "selection_policy": "nearest_model_matches",
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "objects-05-lift-things.mp4",
+          "bytes": 1403817,
+          "duration_seconds": 21.708333,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "objects-05-lift-things.gif",
+          "bytes": 1621817,
+          "duration_seconds": 10.88,
+          "width": 1000,
+          "height": 622,
+          "frames": 87
+        }
+      }
+    },
+    {
+      "query": "move to the object that can store cargo",
+      "issued_unix": 1791764832.6097243,
+      "reached_unix": 1791764837.3949754,
+      "id": "objects-06-store-cargo",
+      "source": "objects",
+      "scene": "warehouse_objects",
+      "title": "Warehouse objects",
+      "number": 6,
+      "count": 9,
+      "start_seconds": 121.61,
+      "end_seconds": 133.395,
+      "selected_unix": 1791764835.0757983,
+      "selected_object": "forklift_0",
+      "query_kind": "gallery_description",
+      "selection_policy": "nearest_model_matches",
+      "nav2_result": "SUCCEEDED",
+      "note": "The model selected forklift_0 for \"can store cargo\". This is not a demonstration of selecting a storage rack.",
+      "files": {
+        "mp4": {
+          "name": "objects-06-store-cargo.mp4",
+          "bytes": 699746,
+          "duration_seconds": 11.75,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "objects-06-store-cargo.gif",
+          "bytes": 888004,
+          "duration_seconds": 5.88,
+          "width": 1000,
+          "height": 622,
+          "frames": 47
+        }
+      }
+    },
+    {
+      "query": "move to the another forklift",
+      "issued_unix": 1791764852.7689638,
+      "reached_unix": 1791764879.0752442,
+      "id": "objects-07-another-forklift",
+      "source": "objects",
+      "scene": "warehouse_objects",
+      "title": "Warehouse objects",
+      "number": 7,
+      "count": 9,
+      "start_seconds": 141.769,
+      "end_seconds": 175.075,
+      "selected_unix": 1791764854.005572,
+      "selected_object": "forklift_1",
+      "query_kind": "memory_relation",
+      "selection_policy": "another_confirmed_class",
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "objects-07-another-forklift.mp4",
+          "bytes": 2126693,
+          "duration_seconds": 33.291667,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "objects-07-another-forklift.gif",
+          "bytes": 2396420,
+          "duration_seconds": 16.63,
+          "width": 1000,
+          "height": 622,
+          "frames": 133
+        }
+      }
+    },
+    {
+      "query": "move to a fire extinguisher",
+      "issued_unix": 1791764899.2625763,
+      "reached_unix": 1791764921.4222069,
+      "id": "objects-08-a-fire-extinguisher",
+      "source": "objects",
+      "scene": "warehouse_objects",
+      "title": "Warehouse objects",
+      "number": 8,
+      "count": 9,
+      "start_seconds": 188.263,
+      "end_seconds": 217.422,
+      "selected_unix": 1791764901.0022457,
+      "selected_object": "fire_extinguisher_0",
+      "query_kind": "gallery_description",
+      "selection_policy": "random_model_matches",
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "objects-08-a-fire-extinguisher.mp4",
+          "bytes": 1704620,
+          "duration_seconds": 29.125,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "objects-08-a-fire-extinguisher.gif",
+          "bytes": 2067298,
+          "duration_seconds": 14.63,
+          "width": 1000,
+          "height": 622,
+          "frames": 117
+        }
+      }
+    },
+    {
+      "query": "move to the farthest storage rack",
+      "issued_unix": 1791764932.2437286,
+      "reached_unix": 1791764956.3450418,
+      "id": "objects-09-farthest-rack",
+      "source": "objects",
+      "scene": "warehouse_objects",
+      "title": "Warehouse objects",
+      "number": 9,
+      "count": 9,
+      "start_seconds": 221.244,
+      "end_seconds": 250.876,
+      "selected_unix": 1791764933.4238968,
+      "selected_object": "storage_rack_2",
+      "query_kind": "memory_relation",
+      "selection_policy": "farthest_confirmed_class",
+      "nav2_result": "SUCCEEDED",
+      "files": {
+        "mp4": {
+          "name": "objects-09-farthest-rack.mp4",
+          "bytes": 1782239,
+          "duration_seconds": 29.625,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24
+        },
+        "gif": {
+          "name": "objects-09-farthest-rack.gif",
+          "bytes": 2224716,
+          "duration_seconds": 14.88,
+          "width": 1000,
+          "height": 622,
+          "frames": 119
+        }
+      }
+    }
+  ]
+}

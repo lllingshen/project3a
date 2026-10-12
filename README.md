@@ -28,12 +28,21 @@ Adapted from the [original course diagram](docs/media/system_overview.svg).
 
 ## Demos
 
-New LocateAnything recordings will be added here as GIF previews with links to
-the full videos. See the [recording notes](docs/media/demos/README.md) for the
-three scenes.
+Two recorded scenes, **15 queries**. Each GIF plays at **2x speed**; the linked
+MP4 keeps the original speed. [Watch all 15 query clips](docs/media/demos/README.md).
 
-<!-- Add the recorded chairs, warehouse-objects, and warehouse-colors clips here.
-     Publish actual GIF/MP4 files in docs/media/demos/ before adding their links. -->
+![LocateAnything selects the white chair from a color and purpose description](docs/media/demos/colors-03-white-seat.gif)
+
+**Color and purpose:** `go to the white object that i can sit on` selects the white
+chair, `chair_0`. [Original-speed MP4](docs/media/demos/colors-03-white-seat.mp4)
+· [All 6 color-scene queries](docs/media/demos/README.md#warehouse-colors).
+
+![LocateAnything selects a fire extinguisher from its purpose](docs/media/demos/objects-04-put-out-fire.gif)
+
+**Purpose:** `move to the object that can put out fire` selects
+`fire_extinguisher_1`. [Original-speed MP4](docs/media/demos/objects-04-put-out-fire.mp4)
+· [All 9 warehouse queries](docs/media/demos/README.md#warehouse-objects), including
+ID lookup, “another,” “farthest,” and the cargo-query mismatch.
 
 <a id="setup-by-platform"></a>
 
