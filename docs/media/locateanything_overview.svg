@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1080" viewBox="0 0 1500 1080" role="img" aria-labelledby="title desc" font-family="Liberation Sans, Helvetica, Arial, sans-serif">
+<title id="title">LocateAnything inside the TurtleBot3 navigation stack</title>
+<desc id="desc">Adapted from Yiyuchen Hu's course system overview. Shared autonomous exploration supplies camera views. LocateAnything inventories objects; aligned depth and transforms supply geometry; repeated viewpoints confirm visual memory. Commands use LocateAnything on galleries or scene images, or direct memory rules for IDs and supported bare-class relations. Selected source evidence is localized, checked for a safe approach, and sent to Nav2. The demo waits after success or failure and reuses memory for the next command.</desc>
+<!-- Layout adapted from docs/media/system_overview.svg, MIT License, Copyright (c) 2026 Yiyuchen Hu. -->
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,4 L0,8 Z" fill="#222222"/></marker></defs>
+<rect width="1500" height="1080" fill="#ffffff"/>
+<text x="40" y="52" text-anchor="start" font-size="34" font-weight="bold" fill="#1f2328">LocateAnything inside the TurtleBot3 navigation stack</text>
+<text x="40" y="84" text-anchor="start" font-size="20" font-weight="normal" fill="#5c6570">Map first, query later: observe objects, build visual memory, then navigate to a remembered target.</text>
+<rect x="40" y="112" width="450" height="390" rx="0" fill="#fdf6d6" stroke="#e6d9a2" stroke-width="1.6"/>
+<text x="56" y="144" text-anchor="start" font-size="22" font-weight="bold" fill="#1f2328">1  Autonomous exploration</text>
+<rect x="525" y="112" width="450" height="390" rx="0" fill="#fdf6d6" stroke="#e6d9a2" stroke-width="1.6"/>
+<text x="541" y="144" text-anchor="start" font-size="22" font-weight="bold" fill="#1f2328">2  Perception while exploring</text>
+<rect x="1010" y="112" width="450" height="390" rx="0" fill="#fdf6d6" stroke="#e6d9a2" stroke-width="1.6"/>
+<text x="1026" y="144" text-anchor="start" font-size="22" font-weight="bold" fill="#1f2328">3  RGB-D &amp; visual memory</text>
+<rect x="64" y="169" width="340" height="48" rx="24" fill="#ffffff" stroke="#222222" stroke-width="1.6"/>
+<text x="234.0" y="199" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">Random safe robot spawn</text>
+<rect x="64" y="242" width="340" height="68" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="234.0" y="269" text-anchor="middle" font-size="22" font-weight="normal" fill="#1f2328">SLAM Toolbox</text>
+<text x="234.0" y="295" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">LiDAR + odometry → map + pose</text>
+<rect x="64" y="333" width="340" height="75" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="234.0" y="362" text-anchor="middle" font-size="21" font-weight="normal" fill="#1f2328">Frontier / observation goals</text>
+<text x="234.0" y="389" text-anchor="middle" font-size="18" font-weight="normal" fill="#1f2328">Unexplored edges or useful viewpoints</text>
+<rect x="64" y="432" width="340" height="48" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="234.0" y="463" text-anchor="middle" font-size="21" font-weight="normal" fill="#1f2328">Nav2 moves the robot</text>
+<path d="M234,217 L234,239" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M234,310 L234,330" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M234,408 L234,429" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M404,456 L428,456 L428,370 L407,370" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<text x="456" y="407" text-anchor="middle" font-size="14" font-weight="normal" fill="#1f2328">keep</text>
+<text x="456" y="425" text-anchor="middle" font-size="14" font-weight="normal" fill="#1f2328">exploring</text>
+<path d="M490,206 L549,206" fill="none" stroke="#222222" stroke-width="1.7" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<text x="509" y="172" text-anchor="middle" font-size="14" font-weight="normal" fill="#5c6570">new</text>
+<text x="509" y="189" text-anchor="middle" font-size="14" font-weight="normal" fill="#5c6570">views</text>
+<rect x="552" y="170" width="396" height="72" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="750.0" y="199" text-anchor="middle" font-size="22" font-weight="normal" fill="#1f2328">RGB camera frame</text>
+<text x="750.0" y="226" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">A new view as the robot moves</text>
+<rect x="552" y="270" width="396" height="96" rx="10" fill="#147d79" stroke="#147d79" stroke-width="1.6"/>
+<text x="750.0" y="302" text-anchor="middle" font-size="25" font-weight="bold" fill="#ffffff">LocateAnything</text>
+<text x="750.0" y="331" text-anchor="middle" font-size="20" font-weight="normal" fill="#d8f2ef">Recognize configured object classes</text>
+<text x="750.0" y="354" text-anchor="middle" font-size="19" font-weight="normal" fill="#d8f2ef">Replaces the YOLO detector</text>
+<rect x="552" y="398" width="396" height="78" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="750.0" y="428" text-anchor="middle" font-size="22" font-weight="normal" fill="#1f2328">2D boxes + class labels</text>
+<text x="750.0" y="457" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">From the observed image</text>
+<path d="M750,242 L750,267" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M750,366 L750,395" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M948,437 L990,437 L990,211 L1033,211" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<rect x="1036" y="170" width="396" height="85" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="1234.0" y="198" text-anchor="middle" font-size="23" font-weight="normal" fill="#1f2328">RGB-D localization</text>
+<text x="1234.0" y="223" text-anchor="middle" font-size="19" font-weight="normal" fill="#1f2328">Boxes + aligned depth + camera + TF</text>
+<text x="1234.0" y="246" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">→ measured object positions</text>
+<rect x="1036" y="280" width="396" height="74" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="1234.0" y="308" text-anchor="middle" font-size="22" font-weight="normal" fill="#1f2328">Confirm object classes</text>
+<text x="1234.0" y="335" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">Evidence from different viewpoints</text>
+<rect x="1036" y="382" width="396" height="94" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="1234.0" y="410" text-anchor="middle" font-size="23" font-weight="normal" fill="#1f2328">Visual memory</text>
+<text x="1234.0" y="437" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">IDs + positions + source images</text>
+<text x="1234.0" y="462" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">Retain depth, calibration, and TF</text>
+<path d="M1234,255 L1234,277" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M1234,354 L1234,379" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M1234,476 L1234,543 L426,543 L426,572" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<rect x="655" y="531" width="380" height="25" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1.6"/>
+<text x="845" y="550" text-anchor="middle" font-size="18" font-weight="normal" fill="#1f2328">Stored views + confirmed object IDs</text>
+<rect x="235" y="575" width="1225" height="375" rx="0" fill="#fdf6d6" stroke="#e6d9a2" stroke-width="1.6"/>
+<text x="251" y="608" text-anchor="start" font-size="23" font-weight="bold" fill="#1f2328">4  Query memory and go</text>
+<text x="1437" y="607" text-anchor="end" font-size="18" font-weight="normal" fill="#5c6570">Exploration pauses while handling the command</text>
+<text x="124" y="681" text-anchor="middle" font-size="18" font-weight="normal" fill="#5c6570">User command</text>
+<rect x="36" y="701" width="176" height="74" rx="35" fill="#ffffff" stroke="#222222" stroke-width="1.6"/>
+<text x="124.0" y="731" text-anchor="middle" font-size="18" font-weight="normal" fill="#1f2328">go to the</text>
+<text x="124.0" y="756" text-anchor="middle" font-size="19" font-weight="normal" fill="#1f2328">red chair</text>
+<rect x="256" y="633" width="340" height="110" rx="10" fill="#147d79" stroke="#147d79" stroke-width="1.6"/>
+<text x="426.0" y="664" text-anchor="middle" font-size="23" font-weight="bold" fill="#ffffff">LocateAnything query</text>
+<text x="426.0" y="695" text-anchor="middle" font-size="19" font-weight="normal" fill="#d8f2ef">Description → object gallery</text>
+<text x="426.0" y="723" text-anchor="middle" font-size="18" font-weight="normal" fill="#d8f2ef">Spatial query → original scene views</text>
+<rect x="256" y="773" width="340" height="70" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="426.0" y="802" text-anchor="middle" font-size="21" font-weight="normal" fill="#1f2328">Memory rules (no model)</text>
+<text x="426.0" y="828" text-anchor="middle" font-size="17" font-weight="normal" fill="#1f2328">Exact ID / near, far, another + class</text>
+<path d="M212,738 L232,738" fill="none" stroke="#222222" stroke-width="1.7"/>
+<path d="M232,738 L232,688 L253,688" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M232,738 L232,808 L253,808" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M596,688 L625,688 L625,808 L596,808" fill="none" stroke="#222222" stroke-width="1.7"/>
+<path d="M625,738 L657,738" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<rect x="660" y="682" width="280" height="112" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="800.0" y="710" text-anchor="middle" font-size="20" font-weight="normal" fill="#1f2328">Selected source observation</text>
+<text x="800.0" y="741" text-anchor="middle" font-size="18" font-weight="normal" fill="#1f2328">Original box + aligned depth</text>
+<text x="800.0" y="770" text-anchor="middle" font-size="18" font-weight="normal" fill="#1f2328">Camera calibration + TF → map</text>
+<rect x="992" y="682" width="216" height="112" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="1100.0" y="711" text-anchor="middle" font-size="21" font-weight="normal" fill="#1f2328">Safe approach pose</text>
+<text x="1100.0" y="743" text-anchor="middle" font-size="18" font-weight="normal" fill="#1f2328">Costmap + TF checks</text>
+<text x="1100.0" y="771" text-anchor="middle" font-size="18" font-weight="normal" fill="#1f2328">Face selected object</text>
+<rect x="1246" y="682" width="192" height="112" rx="10" fill="#e4def7" stroke="#5b4bc4" stroke-width="1.6"/>
+<text x="1342.0" y="713" text-anchor="middle" font-size="24" font-weight="normal" fill="#1f2328">Nav2</text>
+<text x="1342.0" y="746" text-anchor="middle" font-size="19" font-weight="normal" fill="#1f2328">NavigateToPose</text>
+<text x="1342.0" y="774" text-anchor="middle" font-size="18" font-weight="normal" fill="#1f2328">Drive to the goal</text>
+<path d="M940,738 L989,738" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M1208,738 L1243,738" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<rect x="1208" y="834" width="230" height="85" rx="30" fill="#ffffff" stroke="#222222" stroke-width="1.6"/>
+<text x="1323.0" y="860" text-anchor="middle" font-size="17" font-weight="normal" fill="#1f2328">TARGET_REACHED</text>
+<text x="1323.0" y="884" text-anchor="middle" font-size="17" font-weight="normal" fill="#1f2328">or TARGET_FAILED</text>
+<text x="1323.0" y="907" text-anchor="middle" font-size="18" font-weight="bold" fill="#1f2328">Wait for next command</text>
+<path d="M1342,794 L1342,831" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<path d="M625,808 L625,878 L1205,878" fill="none" stroke="#222222" stroke-width="1.7" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+<text x="892" y="867" text-anchor="middle" font-size="18" font-weight="normal" fill="#5c6570">No usable target → TARGET_FAILED</text>
+<path d="M1323,919 L1323,979 L124,979 L124,778" fill="none" stroke="#222222" stroke-width="1.7" marker-end="url(#arrow)"/>
+<rect x="565" y="966" width="442" height="25" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1.6"/>
+<text x="786" y="985" text-anchor="middle" font-size="19" font-weight="normal" fill="#1f2328">Next command reuses the same memory</text>
+<text x="40" y="1024" text-anchor="start" font-size="18" font-weight="normal" fill="#5c6570">Shared SLAM, exploration, and Nav2; LocateAnything owns perception, visual memory, and semantic queries. No YOLO in this mode.</text>
+<text x="40" y="1053" text-anchor="start" font-size="17" font-weight="normal" fill="#5c6570">Default demo: wait after each command. Optional auto_resume_exploration:=true continues exploring. Arrival does not prove correct target selection.</text>
+</svg>

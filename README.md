@@ -19,6 +19,22 @@ shared SLAM, exploration, and navigation components.
 visit an object. A command selects from remembered objects; it does not guarantee
 that an unseen object will be found.
 
+## LocateAnything workflow
+
+![LocateAnything pipeline: exploration, perception, RGB-D visual memory, target selection, and Nav2 navigation](docs/media/locateanything_overview.svg)
+
+Adapted from the [original course diagram](docs/media/system_overview.svg).
+[Full-resolution PNG](docs/media/locateanything_overview.png).
+
+## Demos
+
+New LocateAnything recordings will be added here as GIF previews with links to
+the full videos. See the [recording notes](docs/media/demos/README.md) for the
+three scenes.
+
+<!-- Add the recorded chairs, warehouse-objects, and warehouse-colors clips here.
+     Publish actual GIF/MP4 files in docs/media/demos/ before adding their links. -->
+
 <a id="setup-by-platform"></a>
 
 ## Setup and build
