@@ -23,18 +23,19 @@ Adapted from the [original course diagram](https://github.com/YiyuchenHu/turtleb
 ## Demos
 
 Two recorded scenes, **15 queries**. Each GIF plays at **2x speed**; the linked
-MP4 keeps the original speed. [Watch all 15 query clips](docs/media/demos/README.md).
+WebM and MP4 downloads keep the original speed.
+[Watch all 15 query clips](docs/media/demos/README.md).
 
 ![LocateAnything selects the white chair from a color and purpose description](docs/media/demos/colors-03-white-seat.gif)
 
 **Color and purpose:** `go to the white object that i can sit on` selects the white
-chair, `chair_0`. [Original-speed MP4](docs/media/demos/colors-03-white-seat.mp4)
+chair, `chair_0`. [Original-speed WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-03-white-seat.webm) · [MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-03-white-seat.mp4)
 · [All 6 color-scene queries](docs/media/demos/README.md#warehouse-colors).
 
 ![LocateAnything selects a fire extinguisher from its purpose](docs/media/demos/objects-04-put-out-fire.gif)
 
 **Purpose:** `move to the object that can put out fire` selects
-`fire_extinguisher_1`. [Original-speed MP4](docs/media/demos/objects-04-put-out-fire.mp4)
+`fire_extinguisher_1`. [Original-speed WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-04-put-out-fire.webm) · [MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-04-put-out-fire.mp4)
 · [All 9 warehouse queries](docs/media/demos/README.md#warehouse-objects), including
 ID lookup, “another,” “farthest,” and the cargo-query mismatch.
 

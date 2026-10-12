@@ -5,7 +5,8 @@
     "mp4": "Continuous trimmed footage at original speed, 1920px wide, 24 fps, H.264; added query header.",
     "gif": "Same continuous clip at 2x speed, 1000px wide, 8 fps; speed label in header.",
     "timing": "Cut positions use the filename start time as a wall-clock reference and were checked against the visible command sequence. Event timestamps come from the matching ROS logs.",
-    "outcomes": "Selected object and Nav2 result are log-backed observations, not a semantic accuracy score. Originals are retained outside Git."
+    "outcomes": "Selected object and Nav2 result are log-backed observations, not a semantic accuracy score. Originals are retained outside Git.",
+    "webm": "The same original-speed, 1920px-wide, 24 fps footage and query header as the MP4 clips, converted to VP9/yuv420p WebM for playback without H.264 codecs; no additional cuts or speed changes."
   },
   "sources": [
     {
@@ -62,6 +63,17 @@
           "width": 1000,
           "height": 622,
           "frames": 35
+        },
+        "webm": {
+          "name": "colors-01-person-id.webm",
+          "bytes": 451120,
+          "duration_seconds": 8.834,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 212,
+          "codec": "vp9",
+          "sha256": "86b98f50a037b1770b347a8a4bc7e0241793e29a55f1c4cca2378bea9961157e"
         }
       }
     },
@@ -98,6 +110,17 @@
           "width": 1000,
           "height": 622,
           "frames": 125
+        },
+        "webm": {
+          "name": "colors-02-chair-id.webm",
+          "bytes": 3524799,
+          "duration_seconds": 31.292,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 751,
+          "codec": "vp9",
+          "sha256": "a2dca74d77080622038d29e319e14d54fa27862796556291575de77b6861be54"
         }
       }
     },
@@ -134,6 +157,17 @@
           "width": 1000,
           "height": 622,
           "frames": 91
+        },
+        "webm": {
+          "name": "colors-03-white-seat.webm",
+          "bytes": 2444524,
+          "duration_seconds": 22.625,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 543,
+          "codec": "vp9",
+          "sha256": "93bef96d21f8e5d33a50ede0f71d91a3d7ff681462d01740e7fdcea0a9678491"
         }
       }
     },
@@ -170,6 +204,17 @@
           "width": 1000,
           "height": 622,
           "frames": 140
+        },
+        "webm": {
+          "name": "colors-04-blue-table.webm",
+          "bytes": 4032419,
+          "duration_seconds": 34.959,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 839,
+          "codec": "vp9",
+          "sha256": "f036769a192616fb5fcd3324424388bdfcf7e6aa33b8db22155aaba6e4c0159e"
         }
       }
     },
@@ -206,6 +251,17 @@
           "width": 1000,
           "height": 622,
           "frames": 139
+        },
+        "webm": {
+          "name": "colors-05-green-object.webm",
+          "bytes": 4439545,
+          "duration_seconds": 34.834,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 836,
+          "codec": "vp9",
+          "sha256": "eb387cd20fdfd85c282147fe7b4968e8b154f0ebdd351256695910d18ebee3f5"
         }
       }
     },
@@ -242,6 +298,17 @@
           "width": 1000,
           "height": 622,
           "frames": 127
+        },
+        "webm": {
+          "name": "colors-06-person.webm",
+          "bytes": 3573122,
+          "duration_seconds": 31.625,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 759,
+          "codec": "vp9",
+          "sha256": "fb9c8a0a4864e63360ffee0aff917ae1f6b8af7f865f7948ce51cb5559d82f0d"
         }
       }
     },
@@ -278,6 +345,17 @@
           "width": 1000,
           "height": 622,
           "frames": 79
+        },
+        "webm": {
+          "name": "objects-01-extinguisher-id.webm",
+          "bytes": 1473855,
+          "duration_seconds": 19.667,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 472,
+          "codec": "vp9",
+          "sha256": "00f83841c97dfe49448b1f4959e3db092488da3264d2d7b9045ae22e0d74be0d"
         }
       }
     },
@@ -314,6 +392,17 @@
           "width": 1000,
           "height": 622,
           "frames": 72
+        },
+        "webm": {
+          "name": "objects-02-rack-id.webm",
+          "bytes": 1362879,
+          "duration_seconds": 17.875,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 429,
+          "codec": "vp9",
+          "sha256": "41a759d3b86f0335cbbeae85cefb24fbb2189e373c228ea6cf7e06ec24f3dd68"
         }
       }
     },
@@ -350,6 +439,17 @@
           "width": 1000,
           "height": 622,
           "frames": 95
+        },
+        "webm": {
+          "name": "objects-03-forklift-id.webm",
+          "bytes": 2076205,
+          "duration_seconds": 23.709,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 569,
+          "codec": "vp9",
+          "sha256": "5a741ad2b7490ba215dc1da23dfa47d7d6c10413aedeaeea45cc8a2c9ab9d5a0"
         }
       }
     },
@@ -386,6 +486,17 @@
           "width": 1000,
           "height": 622,
           "frames": 70
+        },
+        "webm": {
+          "name": "objects-04-put-out-fire.webm",
+          "bytes": 1537903,
+          "duration_seconds": 17.542,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 421,
+          "codec": "vp9",
+          "sha256": "0da88f7fc34224b11ff03976618bdb0de1bc41a7bf10fce987e3ec1b4b46ab4c"
         }
       }
     },
@@ -422,6 +533,17 @@
           "width": 1000,
           "height": 622,
           "frames": 87
+        },
+        "webm": {
+          "name": "objects-05-lift-things.webm",
+          "bytes": 2144102,
+          "duration_seconds": 21.709,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 521,
+          "codec": "vp9",
+          "sha256": "fd7014e4c2bf36f13a8a372acb58fbe60407a274634f625e49d71509864cf1cc"
         }
       }
     },
@@ -459,6 +581,17 @@
           "width": 1000,
           "height": 622,
           "frames": 47
+        },
+        "webm": {
+          "name": "objects-06-store-cargo.webm",
+          "bytes": 1006730,
+          "duration_seconds": 11.75,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 282,
+          "codec": "vp9",
+          "sha256": "4601307ec66e85bf2cfbe8a4703958af69347c7ef0ee3754c7151047c4aac3e2"
         }
       }
     },
@@ -495,6 +628,17 @@
           "width": 1000,
           "height": 622,
           "frames": 133
+        },
+        "webm": {
+          "name": "objects-07-another-forklift.webm",
+          "bytes": 3155091,
+          "duration_seconds": 33.292,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 799,
+          "codec": "vp9",
+          "sha256": "34e4a56a53b41a4aac81622b45a27d480ae6f92aa096a31124185cc6152ce2df"
         }
       }
     },
@@ -531,6 +675,17 @@
           "width": 1000,
           "height": 622,
           "frames": 117
+        },
+        "webm": {
+          "name": "objects-08-a-fire-extinguisher.webm",
+          "bytes": 2700671,
+          "duration_seconds": 29.125,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 699,
+          "codec": "vp9",
+          "sha256": "d11d0ebcb3dd85254f8a1345a446a1a093581ccba9b6002a69244812a844ac6a"
         }
       }
     },
@@ -567,6 +722,17 @@
           "width": 1000,
           "height": 622,
           "frames": 119
+        },
+        "webm": {
+          "name": "objects-09-farthest-rack.webm",
+          "bytes": 2822713,
+          "duration_seconds": 29.625,
+          "width": 1920,
+          "height": 1196,
+          "fps": 24,
+          "frames": 711,
+          "codec": "vp9",
+          "sha256": "1599101bc7109e4c80862863ac1d9be4be2c373172616e0352ad9cb9842943ad"
         }
       }
     }

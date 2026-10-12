@@ -5,8 +5,9 @@
 All **15 queries** from the two recordings made on October 11, 2026, in their
 original order. The map and visual memory were already built before recording.
 Each clip keeps the command-to-arrival sequence. GIFs play at **2x speed** with
-a label in the corner; MP4s play at **original speed**. A header repeats the
-query so it remains readable in the small preview.
+a label in the corner; WebM and MP4 downloads play at **original speed**.
+Use WebM if your player cannot open MP4. A header repeats the query so it remains
+readable in the small preview.
 
 - [Warehouse colors — 6 queries](#warehouse-colors)
 - [Warehouse objects — 9 queries](#warehouse-objects)
@@ -17,6 +18,8 @@ below selected a forklift, rather than a storage rack.
 
 ## Warehouse colors
 
+<a id="colors-01-person-id"></a>
+
 ### 1. Go to a person by ID
 
 ![go to person_1 — selected person_1](colors-01-person-id.gif)
@@ -25,7 +28,9 @@ below selected a forklift, rather than a storage rack.
 
 The robot is already near this person, so it barely moves.
 
-[Watch the original-speed MP4 (8.8 s)](colors-01-person-id.mp4)
+Original speed (8.8 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-01-person-id.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-01-person-id.mp4)
+
+<a id="colors-02-chair-id"></a>
 
 ### 2. Go to a chair by ID
 
@@ -33,7 +38,9 @@ The robot is already near this person, so it barely moves.
 
 `go to chair_1` → **`chair_1`**.
 
-[Watch the original-speed MP4 (31.3 s)](colors-02-chair-id.mp4)
+Original speed (31.3 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-02-chair-id.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-02-chair-id.mp4)
+
+<a id="colors-03-white-seat"></a>
 
 ### 3. Find a white object to sit on
 
@@ -41,7 +48,9 @@ The robot is already near this person, so it barely moves.
 
 `go to the white object that i can sit on` → **`chair_0`**.
 
-[Watch the original-speed MP4 (22.6 s)](colors-03-white-seat.mp4)
+Original speed (22.6 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-03-white-seat.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-03-white-seat.mp4)
+
+<a id="colors-04-blue-table"></a>
 
 ### 4. Find the blue table
 
@@ -49,7 +58,9 @@ The robot is already near this person, so it barely moves.
 
 `go to the blue table` → **`table_1`**.
 
-[Watch the original-speed MP4 (35.0 s)](colors-04-blue-table.mp4)
+Original speed (35.0 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-04-blue-table.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-04-blue-table.mp4)
+
+<a id="colors-05-green-object"></a>
 
 ### 5. Find the green object
 
@@ -57,7 +68,9 @@ The robot is already near this person, so it barely moves.
 
 `go to the green object` → **`table_0`**.
 
-[Watch the original-speed MP4 (34.8 s)](colors-05-green-object.mp4)
+Original speed (34.8 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-05-green-object.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-05-green-object.mp4)
+
+<a id="colors-06-person"></a>
 
 ### 6. Find a person
 
@@ -65,9 +78,11 @@ The robot is already near this person, so it barely moves.
 
 `go to the person` → **`person_1`**.
 
-[Watch the original-speed MP4 (31.6 s)](colors-06-person.mp4)
+Original speed (31.6 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-06-person.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/colors-06-person.mp4)
 
 ## Warehouse objects
+
+<a id="objects-01-extinguisher-id"></a>
 
 ### 1. Go to a fire extinguisher by ID
 
@@ -75,7 +90,9 @@ The robot is already near this person, so it barely moves.
 
 `move to fire extinguisher 2` → **`fire_extinguisher_2`**.
 
-[Watch the original-speed MP4 (19.7 s)](objects-01-extinguisher-id.mp4)
+Original speed (19.7 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-01-extinguisher-id.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-01-extinguisher-id.mp4)
+
+<a id="objects-02-rack-id"></a>
 
 ### 2. Go to a storage rack by ID
 
@@ -83,7 +100,9 @@ The robot is already near this person, so it barely moves.
 
 `move to the storage rack 2` → **`storage_rack_2`**.
 
-[Watch the original-speed MP4 (17.9 s)](objects-02-rack-id.mp4)
+Original speed (17.9 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-02-rack-id.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-02-rack-id.mp4)
+
+<a id="objects-03-forklift-id"></a>
 
 ### 3. Go to a forklift by ID
 
@@ -91,7 +110,9 @@ The robot is already near this person, so it barely moves.
 
 `move to the forklift 0` → **`forklift_0`**.
 
-[Watch the original-speed MP4 (23.7 s)](objects-03-forklift-id.mp4)
+Original speed (23.7 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-03-forklift-id.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-03-forklift-id.mp4)
+
+<a id="objects-04-put-out-fire"></a>
 
 ### 4. Find something that puts out fire
 
@@ -99,7 +120,9 @@ The robot is already near this person, so it barely moves.
 
 `move to the object that can put out fire` → **`fire_extinguisher_1`**.
 
-[Watch the original-speed MP4 (17.5 s)](objects-04-put-out-fire.mp4)
+Original speed (17.5 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-04-put-out-fire.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-04-put-out-fire.mp4)
+
+<a id="objects-05-lift-things"></a>
 
 ### 5. Find something that lifts things
 
@@ -107,7 +130,9 @@ The robot is already near this person, so it barely moves.
 
 `move to the object that can lift things up` → **`forklift_0`**.
 
-[Watch the original-speed MP4 (21.7 s)](objects-05-lift-things.mp4)
+Original speed (21.7 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-05-lift-things.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-05-lift-things.mp4)
+
+<a id="objects-06-store-cargo"></a>
 
 ### 6. Cargo query: selected a forklift
 
@@ -118,7 +143,9 @@ The robot is already near this person, so it barely moves.
 **Mismatch:** this wording selected `forklift_0`. The robot reached the
 selected forklift; this clip does not show successful storage-rack selection.
 
-[Watch the original-speed MP4 (11.8 s)](objects-06-store-cargo.mp4)
+Original speed (11.8 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-06-store-cargo.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-06-store-cargo.mp4)
+
+<a id="objects-07-another-forklift"></a>
 
 ### 7. Go to another forklift
 
@@ -128,7 +155,9 @@ selected forklift; this clip does not show successful storage-rack selection.
 
 Selects a different confirmed forklift from the previous target in memory.
 
-[Watch the original-speed MP4 (33.3 s)](objects-07-another-forklift.mp4)
+Original speed (33.3 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-07-another-forklift.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-07-another-forklift.mp4)
+
+<a id="objects-08-a-fire-extinguisher"></a>
 
 ### 8. Go to a fire extinguisher
 
@@ -136,7 +165,9 @@ Selects a different confirmed forklift from the previous target in memory.
 
 `move to a fire extinguisher` → **`fire_extinguisher_0`**.
 
-[Watch the original-speed MP4 (29.2 s)](objects-08-a-fire-extinguisher.mp4)
+Original speed (29.2 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-08-a-fire-extinguisher.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-08-a-fire-extinguisher.mp4)
+
+<a id="objects-09-farthest-rack"></a>
 
 ### 9. Go to the farthest storage rack
 
@@ -147,7 +178,7 @@ Selects a different confirmed forklift from the previous target in memory.
 “Farthest” uses straight-line distance to the confirmed storage racks in
 the current memory, rather than navigation-path length.
 
-[Watch the original-speed MP4 (29.6 s)](objects-09-farthest-rack.mp4)
+Original speed (29.6 s): [Download WebM](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-09-farthest-rack.webm) · [Download MP4](https://github.com/lllingshen/project3a/raw/refs/heads/main/docs/media/demos/objects-09-farthest-rack.mp4)
 
 ## Recording details
 
