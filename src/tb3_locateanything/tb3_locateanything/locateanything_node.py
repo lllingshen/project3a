@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LocateAnything perception, visual memory and command lookup, without YOLO.
+"""LocateAnything perception, visual memory and command lookup.
 
 Frozen camera/laser observations provide the evidence for both cataloguing and
 later description queries. The coordinator and Nav2 remain the motion owners.
@@ -26,7 +26,7 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import Bool, String
 from visualization_msgs.msg import Marker, MarkerArray
 import tf2_ros
-from tb3_query.msg import SemanticQueryResult
+from tb3_interfaces.msg import SemanticQueryResult
 
 from .geometry import (CameraCalibration, Quaternion, Transform3D, Vector3,
                        transform_point, validate_camera_calibration)

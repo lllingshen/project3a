@@ -1,6 +1,6 @@
 # 两个 LocateAnything 仓库例子
 
-只需要两个终端。终端 A 启动整套程序，终端 B 发导航指令。LocateAnything 从 RGB 图像识别物体、建立视觉记忆，再根据指令找目标；物体坐标由对齐深度图、相机参数和 TF 计算。二维激光仍负责 SLAM 建图和 Nav2 避障。这个模式不启动 YOLO、原版 localizer、两层物体 memory 或 query 节点，原作业 baseline 流程仍保留。从首次发现物体、确认记忆到按指令选目标，全程不需要 YOLO，也不需要先用 YOLO 建库。
+只需要两个终端。终端 A 启动整套程序，终端 B 发导航指令。LocateAnything 从 RGB 图像识别物体、建立视觉记忆，再根据指令找目标；物体坐标由对齐深度图、相机参数和 TF 计算。二维激光仍负责 SLAM 建图和 Nav2 避障。这个仓库只提供 LocateAnything 链路，从首次发现物体、确认记忆到按指令选目标，均由 LocateAnything 完成。
 
 当前 demo 默认 `rgbd_camera:=true localization_mode:=depth`。RGB 与深度来自同一个 Gazebo 相机，使用同一时刻和光学坐标系；深度是传感器测量，不是 LocateAnything 猜出的距离。
 
@@ -9,7 +9,7 @@
 先按 [README](../README.md) 编译。**两个终端都先执行：**
 
 ```bash
-cd /home/lingshen/Desktop/CSE498/LAB3
+cd ~/project3a
 source scripts/project3_env.sh
 ```
 
@@ -54,7 +54,7 @@ SLAM 使用继承自系统的同步建图配置，平移更新阈值改为 0.10 
 
 LocateAnything 的三个场景默认 `startup_scan:=false`：Gazebo、SLAM/Nav2 和后端同时启动，取消原来第 10 秒、第 20 秒分批启动的安排，也不再先等待 12 秒或强制原地转一圈。SLAM 收到传感器数据后就开始建图；探索在 Nav2 已激活、TF 和新鲜代价地图可用、存在安全可达的探索目标时开始，不等待模型加载或物体 Memory 完整。程序启动和传感器就绪仍需要时间，因此不保证输入启动命令后零秒就移动。
 
-如需恢复以前的启动扫描，加 `startup_scan:=true`：三个 demo 场景会先等待 12 秒，连续转四次 +90°，每次转完暂停 2 秒；转向按里程计实测角度结束，不保证固定多少秒转完。使用 `startup_scan:=true warmup_full_rotation:=false` 则扫描约 ±70°。原作业 baseline 保留原来的一键启动时序，`startup_scan` 默认 `true`，扫描约 ±45°。扫描本身不保证看到或确认所有物体，应继续探索取得不同位置的观察。
+如需恢复以前的启动扫描，加 `startup_scan:=true`：三个 demo 场景会先等待 12 秒，连续转四次 +90°，每次转完暂停 2 秒；转向按里程计实测角度结束，不保证固定多少秒转完。使用 `startup_scan:=true warmup_full_rotation:=false` 则扫描约 ±70°。扫描本身不保证看到或确认所有物体，应继续探索取得不同位置的观察。
 
 探索最多使用两次启动辅助目标，之后由正常的 frontier 导航接管；每个探索目标在连续 20 秒没有测得进展或累计达到 180 秒时取消，失败位置附近的占据地图未变化时不重试。这些是单个探索目标的限制，不表示 180 秒内一定看完整个房间。
 
@@ -120,7 +120,7 @@ ros2 topic echo --once /locateanything/observation_status --qos-durability trans
 
 程序不会只读取框中心的一个深度像素，因为中心可能落在遮挡物上，也可能穿过货架空洞落到墙上。它检查目标框及周围的实测深度表面，排除地面、背景和明显延伸到框外的表面；剩余表面仍无法确定归属时，拒绝这次观察，等待更清楚的视角。不同类别的框高度重合或互相包含时，默认拒绝；只有两个框各自通过深度定位，实测 XY 支撑范围至少相隔 0.35 米，且测得深度至少相差 0.5 米，才允许作为前后两个物体。例如货架空隙后方的灭火器可以满足条件，给同一叉车重复贴两个类别则不能。任何一个框缺少可靠深度，都不允许这个例外。这些检查并不保证模型类别正确或每个视角都能定位。
 
-每次采集还要求同步的 IMU 姿态，机体倾斜超过 15° 时停止新增观察。深度模式缺少对齐深度时会等待或失败，不会自动改用激光。若需要旧 LocateAnything 激光定位路径，可加 `localization_mode:=laser rgbd_camera:=false`；它仍要求物体与激光扫描平面相交。原作业 YOLO baseline 的定位方式保持原样。
+每次采集还要求同步的 IMU 姿态，机体倾斜超过 15° 时停止新增观察。深度模式缺少对齐深度时会等待或失败，不会自动改用激光。若需要旧 LocateAnything 激光定位路径，可加 `localization_mode:=laser rgbd_camera:=false`；它仍要求物体与激光扫描平面相交。
 
 ### 叉车、灭火器、货架
 
@@ -140,7 +140,7 @@ ros2 topic pub --once /user_command std_msgs/String "data: 'go to a random forkl
 ros2 topic pub --once /user_command std_msgs/String "data: 'go to forklift_1'"
 ```
 
-默认启用编号查表（节点参数 `enable_explicit_id_lookup=true`），`go to a forklift_1` 也可以，冠词 `a/an/the` 均接受。明确编号直接查表；简单的 `another` 和远近指令比较已确认记忆；其他自然语言描述由 LocateAnything 判断。这些路径都使用 LocateAnything 建立的 Memory，不需要 YOLO 或仿真器真实坐标；选中后仍检查证据、定位和 Nav2 条件，不保证目标一定可达。
+默认启用编号查表（节点参数 `enable_explicit_id_lookup=true`），`go to a forklift_1` 也可以，冠词 `a/an/the` 均接受。明确编号直接查表；简单的 `another` 和远近指令比较已确认记忆；其他自然语言描述由 LocateAnything 判断。这些路径都使用 LocateAnything 建立的 Memory，不需要仿真器真实坐标；选中后仍检查证据、定位和 Nav2 条件，不保证目标一定可达。
 
 | 类别 | 指定编号 |
 |---|---|
@@ -203,7 +203,7 @@ ros2 topic pub --once -w 3 --keep-alive 2 /user_command std_msgs/String "data: '
 
 跨视角关联会参考对齐深度提供的实测物体表面点，并把这些证据保存在 odom 坐标系中，帮助判断换个角度看到的是否仍是同一个物体。同一画面里分开的两个物体不会仅因为位置接近就合并。深度模式中，一个已确认目标偶尔出现一次其他类别时，先保留证据供核对；另一类别需要两个独立位置的支持，才可能标为 `conflicted`。若原类别曾有未触及图像边缘的完整框支持，截断近景的其他类别票只保留供核对，不能单独触发冲突；同样完整的竞争证据仍可触发冲突。首次确认仍允许两次独立的截断观察，例如顶部超出画面的高货架。框完整不代表类别一定正确。已有冲突保持原编号和类别并禁止导航，不会靠后续投票或淘汰旧图自动消失。
 
-可选的旧激光模式保留此前规则：一次有效观察可以建立正式 ID，出现不同已知类别就标为冲突。原作业 YOLO baseline 的 Memory 不受这些新规则影响。
+可选的旧激光模式保留此前规则：一次有效观察可以建立正式 ID，出现不同已知类别就标为冲突。
 
 深度能区分前后表面，但不能独自证明它们属于哪个语义类别；相互遮挡、细框架和模型误识别仍可能导致拒绝或冲突。冲突目标必须按不确定记录处理，不能把条目数等于 8 当成完成验证。
 

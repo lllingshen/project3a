@@ -63,7 +63,7 @@ def _generated_config(profile=None, mode=None):
 
 
 @pytest.mark.parametrize("profile", ["simulation_world_odom", "default"])
-@pytest.mark.parametrize("mode", ["baseline", "locateanything"])
+@pytest.mark.parametrize("mode", ["locateanything"])
 def test_generated_navigation_config_uses_one_collision_checked_path_controller(profile, mode):
     pytest.importorskip("launch")
     from ament_index_python.packages import get_package_share_directory
@@ -182,9 +182,9 @@ def test_slam_profile_is_explicitly_forwarded_through_wrappers(filename, profile
     assert len(includes) == 1
 
 
-def test_navigation_default_mode_keeps_baseline_goal_tolerances():
-    assert _generated_config() == _generated_config(mode="baseline")
-    assert _generated_config()["controller_server"]["ros__parameters"]["general_goal_checker"]["yaw_goal_tolerance"] == 0.25
+def test_navigation_default_mode_uses_locateanything_goal_tolerances():
+    assert _generated_config() == _generated_config(mode="locateanything")
+    assert _generated_config()["controller_server"]["ros__parameters"]["general_goal_checker"]["yaw_goal_tolerance"] == 0.10
 
 
 @pytest.mark.parametrize("filename", ["nav.launch.py", "full_stack.launch.py"])
@@ -194,13 +194,13 @@ def test_navigation_mode_rejects_typos(filename):
         _context_and_description(filename, mode="locateanything_typo")
 
 
-@pytest.mark.parametrize("mode", [None, "baseline", "locateanything"])
+@pytest.mark.parametrize("mode", [None, "locateanything"])
 def test_full_stack_forwards_mode_to_nav(mode):
     from launch.actions import GroupAction, IncludeLaunchDescription, TimerAction
     from launch.utilities import perform_substitutions, normalize_to_list_of_substitutions
 
     context, description = _context_and_description("full_stack.launch.py", mode=mode)
-    expected = "baseline" if mode is None else mode
+    expected = "locateanything" if mode is None else mode
     actions, forwarded = list(description.entities), []
     while actions:
         action = actions.pop()

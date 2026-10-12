@@ -25,7 +25,7 @@ State model
 Subscribed topics
 -----------------
   /user_command                          std_msgs/String
-  /semantic_query_node/selected_target   tb3_query/SemanticQueryResult
+  /semantic_query_node/selected_target   tb3_interfaces/SemanticQueryResult
   /nav_goal_adapter_node/goal_pose       geometry_msgs/PoseStamped
 
 Published topics
@@ -53,7 +53,7 @@ from action_msgs.msg import GoalStatus, GoalStatusArray
 from action_msgs.srv import CancelGoal
 
 try:
-    from tb3_query.msg import SemanticQueryResult
+    from tb3_interfaces.msg import SemanticQueryResult
 except ImportError:
     SemanticQueryResult = None
 
@@ -75,7 +75,7 @@ class CoordinatorNode(Node):
 
         if SemanticQueryResult is None:
             self.get_logger().fatal(
-                "tb3_query messages not found. Source install/setup.bash."
+                "tb3_interfaces messages not found. Source install/setup.bash."
             )
             raise RuntimeError("SemanticQueryResult not available")
 

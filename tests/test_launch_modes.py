@@ -16,7 +16,6 @@ from launch_ros.utilities import evaluate_parameters, normalize_parameters
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BASELINE = {"semantic_memory_node", "semantic_map_memory_node", "semantic_query_node.py"}
 SHARED = {"nav_goal_adapter_node", "coordinator_node"}
 EXPLORATION = {"frontier_detection_node", "goal_assignment_node"}
 WARMUP = "startup_map_warmup_node.py"
@@ -99,7 +98,7 @@ def node_parameters(node, context):
     return result
 
 
-@pytest.mark.parametrize("mode", ["baseline", "locateanything"])
+@pytest.mark.parametrize("mode", ["locateanything"])
 @pytest.mark.parametrize("explore", ["true", "false"])
 def test_backend_runs_exactly_one_semantic_pipeline(monkeypatch, mode, explore):
     description = launch_file("backend.launch.py", monkeypatch)
@@ -109,10 +108,8 @@ def test_backend_runs_exactly_one_semantic_pipeline(monkeypatch, mode, explore):
         for action in selected_actions(description.entities, context)
         if isinstance(action, Node)
     ]
-    perception = BASELINE if mode == "baseline" else {"locateanything_node", "observation_node"}
+    perception = {"locateanything_node", "observation_node"}
     exploration = set(EXPLORATION) if explore == "true" else set()
-    if explore == "true" and mode == "baseline":
-        exploration.add(WARMUP)
     assert set(executables) == perception | SHARED | exploration
     assert len(executables) == len(set(executables))
     if mode == "locateanything":
@@ -140,8 +137,8 @@ def test_backend_shares_custom_camera_calibration_topic_between_perception_and_o
     assert len(checked) == 2
 
 
-@pytest.mark.parametrize("mode", ["baseline", "locateanything"])
-def test_full_stack_excludes_yolo_and_localizer_in_locateanything_mode(monkeypatch, mode):
+@pytest.mark.parametrize("mode", ["locateanything"])
+def test_full_stack_starts_only_the_locateanything_stack(monkeypatch, mode):
     description = launch_file("full_stack.launch.py", monkeypatch)
     context = context_for(description, mode=mode, explore="false", evidence_dir="/tmp/la-evidence")
     includes = {}
@@ -152,8 +149,6 @@ def test_full_stack_excludes_yolo_and_localizer_in_locateanything_mode(monkeypat
             assert Path(source.location).name not in includes
             includes[Path(source.location).name] = action
     expected = {"sim.launch.py", "nav.launch.py", "backend.launch.py"}
-    if mode == "baseline":
-        expected |= {"detector.launch.py", "localizer.launch.py"}
     assert set(includes) == expected
     backend_arguments = {
         text(context, name): text(context, value)
@@ -165,9 +160,6 @@ def test_full_stack_excludes_yolo_and_localizer_in_locateanything_mode(monkeypat
 
 
 @pytest.mark.parametrize("mode,expected", [
-    ("baseline", {"sim.launch.py": 0.0, "nav.launch.py": 10.0,
-                  "detector.launch.py": 15.0, "localizer.launch.py": 15.0,
-                  "backend.launch.py": 20.0}),
     ("locateanything", {"sim.launch.py": 0.0, "nav.launch.py": 0.0,
                         "backend.launch.py": 0.0}),
 ])
@@ -184,7 +176,7 @@ def test_stack_starts_locateanything_and_slam_without_fixed_delays(monkeypatch, 
     assert dict(scheduled) == expected
 
 
-@pytest.mark.parametrize("mode", ["baseline", "locateanything"])
+@pytest.mark.parametrize("mode", ["locateanything"])
 @pytest.mark.parametrize("explore", ["true", "false"])
 @pytest.mark.parametrize("startup_scan", [None, "true", "false"])
 def test_scan_node_and_exploration_gate_always_agree(monkeypatch, mode, explore, startup_scan):
@@ -196,7 +188,7 @@ def test_scan_node_and_exploration_gate_always_agree(monkeypatch, mode, explore,
     nodes = {text(context, action.node_executable): action
              for action in selected_actions(description.entities, context)
              if isinstance(action, Node)}
-    requires_scan = mode == "baseline" if startup_scan is None else startup_scan == "true"
+    requires_scan = False if startup_scan is None else startup_scan == "true"
     assert (WARMUP in nodes) is (explore == "true" and requires_scan)
     assert ("goal_assignment_node" in nodes) is (explore == "true")
     if explore == "true":
@@ -210,14 +202,15 @@ def test_scan_node_and_exploration_gate_always_agree(monkeypatch, mode, explore,
 
 
 @pytest.mark.parametrize("filename", ["backend.launch.py", "full_stack.launch.py"])
-def test_course_launch_defaults_remain_baseline(monkeypatch, filename):
+def test_launch_defaults_use_locateanything_and_depth(monkeypatch, filename):
     description = launch_file(filename, monkeypatch)
     context = context_for(description)
-    assert context.launch_configurations["mode"] == "baseline"
+    assert context.launch_configurations["mode"] == "locateanything"
     assert context.launch_configurations["explore"] == "true"
     assert context.launch_configurations["auto_resume_exploration"] == "true"
     assert context.launch_configurations["warmup_full_rotation"] == "false"
-    assert context.launch_configurations["startup_scan"].lower() == "true"
+    assert context.launch_configurations["startup_scan"].lower() == "false"
+    assert context.launch_configurations["localization_mode"] == "depth"
 
 
 @pytest.mark.parametrize("categories", [
@@ -252,7 +245,7 @@ def test_catalog_class_argument_reaches_ros_as_a_string_array(monkeypatch, categ
     ("warehouse_objects", ("AUTO", "AUTO"), ["forklift", "fire extinguisher", "storage rack"]),
     ("warehouse_colors", ("AUTO", "AUTO"), ["person", "table", "chair"]),
 ])
-def test_demo_profile_selects_one_world_without_yolo(monkeypatch, scenario, spawn, classes):
+def test_demo_profile_selects_its_world_and_catalog(monkeypatch, scenario, spawn, classes):
     description = launch_file("locateanything_demo.launch.py", monkeypatch)
     context = context_for(description, scenario=scenario, explore="false",
                           use_rviz="false", evidence_dir="/tmp/demo-check")
@@ -387,12 +380,11 @@ def test_resume_policy_reaches_coordinator_and_overrides_yaml(monkeypatch, filen
 
 
 @pytest.mark.parametrize("mode,localization,rgbd,expected", [
-    ("baseline","laser","false","False"),
     ("locateanything","laser","false","False"),
     ("locateanything","depth","false","True"),
     ("locateanything","laser","true","True"),
 ])
-def test_rgbd_camera_enabled_for_depth_mode_without_affecting_baseline(monkeypatch,mode,localization,rgbd,expected):
+def test_rgbd_camera_enabled_for_depth_mode(monkeypatch,mode,localization,rgbd,expected):
     description=launch_file("full_stack.launch.py",monkeypatch)
     context=context_for(description,mode=mode,localization_mode=localization,rgbd_camera=rgbd,
                         spawn_seed="498",yaw_pose="1.2",spawn_margin="0.2")
@@ -474,3 +466,10 @@ def test_sim_rgbd_keeps_verified_fixed_pose_and_uses_derived_robot(monkeypatch):
     import xml.etree.ElementTree as ET
     sensors=ET.parse(args["-file"]).getroot().findall(".//sensor")
     assert any(sensor.get("type")=="depth" for sensor in sensors)
+
+
+@pytest.mark.parametrize("filename", ["backend.launch.py", "full_stack.launch.py", "nav.launch.py"])
+def test_removed_pipeline_cannot_be_selected(monkeypatch, filename):
+    description = launch_file(filename, monkeypatch)
+    with pytest.raises(RuntimeError, match="mode"):
+        context_for(description, mode="baseline")

@@ -137,8 +137,9 @@ def test_missing_mesh_unsupported_geometry_and_named_frames_fail_closed(tmp_path
             spawn.load_scene(world,[],(-5,5,-5,5))
 
 
-def test_open_world_requires_explicit_region():
-    world=WORLDS/"detector_test.world"
+def test_open_world_requires_explicit_region(tmp_path):
+    world=tmp_path/"open.world"
+    world.write_text('<sdf version="1.6"><world name="open"/></sdf>')
     with pytest.raises(spawn.SpawnError,match="spawn_bounds"):
         spawn.load_scene(world,[MODELS])
     assert spawn.load_scene(world,[MODELS],(-3,3,-3,3)).bounds == (-3,3,-3,3)

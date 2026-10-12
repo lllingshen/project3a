@@ -8,13 +8,11 @@ find_package(ament_cmake REQUIRED)
 # listed directory is missing, and git does not track empty directories.
 #
 #   launch  every launch file in the course
-#   config  semantic_targets.yaml, the canonical semantic object registry
 #   worlds  the Gazebo .world files
 #   models  vendored Gazebo models the .world files reference via model:// URIs
 #   rviz    the RViz config nav.launch.py opens
 install(DIRECTORY
   launch
-  config
   worlds
   models
   rviz

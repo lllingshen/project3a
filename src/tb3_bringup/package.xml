@@ -20,13 +20,9 @@
 
   <!-- Course packages whose nodes these launch files start. -->
   <exec_depend>tb3_coordinator</exec_depend>
-  <exec_depend>tb3_detector</exec_depend>
   <exec_depend>tb3_frontier_exploration</exec_depend>
-  <exec_depend>tb3_localizer</exec_depend>
   <exec_depend>tb3_locateanything</exec_depend>
-  <exec_depend>tb3_memory</exec_depend>
   <exec_depend>tb3_nav_adapter</exec_depend>
-  <exec_depend>tb3_query</exec_depend>
 
   <!-- Third-party stacks the launch files include. -->
   <exec_depend>gazebo_ros</exec_depend>

@@ -1,3 +1,24 @@
+# Project 3 — LocateAnything
+
+Follow the [main README](README.md) to build the six packages and run one of the
+three demo scenes. The current workflow uses two terminals: one for the stack,
+one for commands. The external model runtime and model files must be configured
+before launch.
+
+1. Build and source the workspace.
+2. Launch `locateanything_demo.launch.py` with the desired `scenario`.
+3. Let the robot explore until the requested objects are confirmed in memory.
+4. Send a `/user_command`, then wait for `TARGET_REACHED` or `TARGET_FAILED`.
+5. Check the selected object as well as navigation arrival.
+
+See [the recorded query clips](docs/media/demos/README.md) for examples.
+The original assignment below is retained for course provenance. Its detector
+implementation task and six-terminal commands apply only to the upstream course,
+not to this LocateAnything-only checkout.
+
+<details>
+<summary>Original course assignment (historical reference)</summary>
+
 # Assignment: Give the Robot Eyes — Object Detection in ROS 2
 
 ## The single file you edit
@@ -180,3 +201,5 @@ Your implementation passes when, with `detector_core.py` as the only code change
    are unchanged.
 
 Background and design rationale: see NOTES.md
+
+</details>

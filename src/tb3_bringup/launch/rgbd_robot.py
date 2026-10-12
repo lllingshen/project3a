@@ -3,8 +3,8 @@
 Only the existing camera sensor changes. One Gazebo depth camera produces both
 RGB and depth, so they share a renderer, viewpoint, calibration and optical
 frame. Meshes, collisions, drive parameters and the laser remain upstream data.
-The ordinary YOLO launch preserves the upstream camera. A separate drive
-routing helper can derive the command topic for either camera mode.
+The optional laser-localization configuration can use the upstream RGB camera.
+A separate drive routing helper derives the command topic for either camera mode.
 
 The ROS 2 gazebo_ros_camera plugin supports both camera and depth sensors:
 https://github.com/ros-simulation/gazebo_ros_pkgs/blob/ros2/gazebo_plugins/src/gazebo_ros_camera.cpp

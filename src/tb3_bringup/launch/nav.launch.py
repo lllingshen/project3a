@@ -34,7 +34,7 @@ def _launch_navigation(context):
     if profile not in ("simulation_world_odom", "default"):
         raise ValueError("Unknown slam_profile: " + profile)
     mode = LaunchConfiguration("mode").perform(context)
-    if mode not in ("baseline", "locateanything"):
+    if mode != "locateanything":
         raise ValueError("Unknown navigation mode: " + mode)
     use_sim_time = LaunchConfiguration("use_sim_time", default="true")
 
@@ -52,12 +52,10 @@ def _launch_navigation(context):
     with open(nav2_params) as source:
         nav2_config = yaml.safe_load(source)
     controller = nav2_config["controller_server"]["ros__parameters"]
-    if mode == "locateanything":
-        # Camera framing uses the actual goal-checker tolerance. Keep the
-        # assignment baseline and XY tolerance unchanged.
-        if controller["goal_checker_plugins"] != ["general_goal_checker"]:
-            raise ValueError("LocateAnything requires one general_goal_checker")
-        controller["general_goal_checker"]["yaw_goal_tolerance"] = 0.10
+    # Face the selected object using the same tolerance as camera framing.
+    if controller["goal_checker_plugins"] != ["general_goal_checker"]:
+        raise ValueError("LocateAnything requires one general_goal_checker")
+    controller["general_goal_checker"]["yaw_goal_tolerance"] = 0.10
     local_costmap = nav2_config["local_costmap"]["local_costmap"]["ros__parameters"]
     controller["FollowPath"] = {
         "plugin": "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController",
@@ -171,9 +169,9 @@ def _launch_navigation(context):
 def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument("use_sim_time", default_value="true"),
-        DeclareLaunchArgument("mode", default_value="baseline",
-                              choices=["baseline", "locateanything"],
-                              description="LocateAnything camera-facing precision or baseline goal tolerance"),
+        DeclareLaunchArgument("mode", default_value="locateanything",
+                              choices=["locateanything"],
+                              description="Semantic perception pipeline"),
         DeclareLaunchArgument("slam_profile", default_value="simulation_world_odom",
                               choices=["simulation_world_odom", "default"],
                               description="Simulation world odometry or upstream loop-closure settings"),

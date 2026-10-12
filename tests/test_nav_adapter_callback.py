@@ -250,7 +250,7 @@ def test_real_ros_adapter_construction_and_safe_goal_publish():
         pytest.skip('set RUN_ROS_ADAPTER_SMOKE=1 with an isolated ROS domain')
     import rclpy
     from geometry_msgs.msg import PoseStamped
-    from tb3_query.msg import SemanticQueryResult
+    from tb3_interfaces.msg import SemanticQueryResult
     import time
     rclpy.init()
     node = None
@@ -325,7 +325,7 @@ def test_real_single_executor_dds_clock_and_tf_phases(case, expected_mode):
     from std_msgs.msg import String
     from geometry_msgs.msg import PoseStamped
     from tf2_msgs.msg import TFMessage
-    from tb3_query.msg import SemanticQueryResult
+    from tb3_interfaces.msg import SemanticQueryResult
     rclpy.init()
     node = driver = executor = None
     try:

@@ -11,7 +11,6 @@ import json
 import math
 import os
 from pathlib import Path
-import re
 import subprocess
 import time
 
@@ -47,12 +46,12 @@ def parse_args():
     parser.add_argument("--command", required=True)
     parser.add_argument("--truth", nargs="+", required=True, help="Actual Gazebo entity names")
     parser.add_argument("--expected-entity", help="Requested physical instance for a descriptive demo")
-    parser.add_argument("--expected-id", help="Optional observed baseline memory ID")
-    parser.add_argument("--mode", choices=("baseline", "locateanything"), default="baseline")
+    parser.add_argument("--expected-id", help="Optional observed LocateAnything memory ID")
+    parser.add_argument("--mode", choices=("locateanything",), default="locateanything")
     parser.add_argument("--note", default="", help="Optional context, such as operator-assisted viewing")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--image", type=Path)
-    parser.add_argument("--image-topic", help="Defaults to the selected mode's debug image")
+    parser.add_argument("--image-topic", help="Defaults to /locateanything/debug_image")
     parser.add_argument("--timeout", type=float, default=180.0)
     parser.add_argument("--resume-timeout", type=float, default=15.0)
     parser.add_argument("--max-distance", type=float, default=1.2)
@@ -76,8 +75,7 @@ def main():
     import tf2_ros
     from std_msgs.msg import String
     from sensor_msgs.msg import Image
-    from vision_msgs.msg import Detection3DArray
-    from tb3_query.msg import SemanticQueryResult
+    from tb3_interfaces.msg import SemanticQueryResult
     from cv_bridge import CvBridge
     import cv2
 
@@ -89,17 +87,14 @@ def main():
             self.buffer = tf2_ros.Buffer()
             self.listener = tf2_ros.TransformListener(self.buffer, self)
             self.pub = self.create_publisher(String, "/user_command", 10)
-            self.statuses, self.landmarks = [], []
+            self.statuses = []
             self.selected = self.terminal = self.image = self.selection_image = None
             self.sent = False
             self.resumed = False
             self.create_subscription(String, "/coordinator_node/status", self.status_cb, 10)
             self.create_subscription(SemanticQueryResult, "/semantic_query_node/selected_target",
                                      self.target_cb, 10)
-            self.create_subscription(Detection3DArray,
-                                     "/semantic_map_memory_node/landmark_objects", self.memory_cb, 10)
-            topic = args.image_topic or ("/locateanything/debug_image" if
-                    args.mode == "locateanything" else "/detector_node/debug_image")
+            topic = args.image_topic or "/locateanything/debug_image"
             self.create_subscription(Image, topic, self.image_cb, qos_profile_sensor_data)
             self.image_topic = topic
 
@@ -133,22 +128,6 @@ def main():
             }
             if self.image is not None:
                 self.capture_selection_image(self.image)
-            if args.mode == "baseline":
-                try:
-                    robot = self.robot_map()
-                    candidates = [x for x in self.landmarks if x["label"] == msg.detector_label]
-                    if candidates:
-                        self.selected["nearest_id_at_selection"] = min(
-                            candidates, key=lambda x: distance(x, robot))["id"]
-                except tf2_ros.TransformException:
-                    pass
-
-        def memory_cb(self, msg):
-            self.landmarks = [{"id": d.id, "label": d.results[0].hypothesis.class_id,
-                               "x": d.bbox.center.position.x, "y": d.bbox.center.position.y,
-                               "frame": msg.header.frame_id}
-                              for d in msg.detections if d.results]
-
         def image_cb(self, msg):
             self.image = msg
             self.capture_selection_image(msg)
@@ -156,12 +135,9 @@ def main():
         def capture_selection_image(self, msg):
             if not self.selected or not self.selected["success"]:
                 return
-            if self.selection_image is not None and args.mode == "baseline":
-                return
             stamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
             query_stamp = self.selected["image_or_query_stamp_sec"]
-            if ((args.mode == "locateanything" and abs(stamp - query_stamp) < 0.001)
-                    or (args.mode == "baseline" and stamp >= query_stamp - 0.5)):
+            if abs(stamp - query_stamp) < 0.001:
                 # LocateAnything publishes raw input before inference and its
                 # annotated result later with the same original timestamp.
                 # Let that later box image replace the raw input even if DDS
@@ -179,16 +155,14 @@ def main():
               "criterion_m": args.max_distance,
               "localization_tolerance_m": args.localization_tolerance}
     try:
-        # Allow discovery, TF, landmarks, and debug images to arrive.
+        # Allow discovery, TF, and debug images to arrive.
         deadline = time.monotonic() + 15.0
         while time.monotonic() < deadline:
             rclpy.spin_once(node, timeout_sec=0.1)
-            if (node.pub.get_subscription_count() and time.monotonic() - started >= 2.0
-                    and (args.mode != "baseline" or node.landmarks)):
+            if node.pub.get_subscription_count() and time.monotonic() - started >= 2.0:
                 break
         if not node.pub.get_subscription_count():
             raise RuntimeError("No coordinator subscribes to /user_command")
-        record["landmarks_before"] = list(node.landmarks)
         node.sent = True
         started = time.monotonic()
         node.pub.publish(String(data=args.command))
@@ -268,9 +242,6 @@ def main():
         record["arrival_pass"] = record["final_distance_m"] <= args.max_distance
         if args.expected_id:
             record["selection_correct"] &= selected["object_id"] == args.expected_id
-        if args.mode == "baseline" and not re.search(r"\d", args.command):
-            record["nearest_selection_pass"] = selected["object_id"] == selected.get("nearest_id_at_selection")
-            record["selection_correct"] &= record["nearest_selection_pass"]
     record["pass"] = bool(record.get("terminal", "").startswith("[TARGET_REACHED]")
                           and record.get("selection_correct") and record.get("localization_pass")
                           and record.get("arrival_pass") and record["exploration_resumed"]

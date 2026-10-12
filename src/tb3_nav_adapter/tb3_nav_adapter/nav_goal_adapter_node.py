@@ -8,7 +8,7 @@ a PoseStamped suitable for Nav2.
 
 Subscribed topics
 -----------------
-  /semantic_query_node/selected_target   tb3_query/SemanticQueryResult
+  /semantic_query_node/selected_target   tb3_interfaces/SemanticQueryResult
 
 Published topics
 ----------------
@@ -49,7 +49,7 @@ from tb3_nav_adapter.goal_adapter_core import yaw_to_quaternion
 from tb3_nav_adapter.safe_approach import CostGrid, select_safe_approach
 
 try:
-    from tb3_query.msg import SemanticQueryResult
+    from tb3_interfaces.msg import SemanticQueryResult
 except ImportError:
     SemanticQueryResult = None
 
@@ -61,8 +61,8 @@ class NavGoalAdapterNode(Node):
 
         if SemanticQueryResult is None:
             self.get_logger().fatal(
-                "tb3_query/msg/SemanticQueryResult not available. "
-                "Did you source install/setup.bash after building tb3_query?"
+                "tb3_interfaces/msg/SemanticQueryResult not available. "
+                "Did you source install/setup.bash after building tb3_interfaces?"
             )
             raise RuntimeError("SemanticQueryResult message not found")
 

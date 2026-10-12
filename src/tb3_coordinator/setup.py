@@ -23,8 +23,6 @@ setup(
     entry_points={
         "console_scripts": [
             "coordinator_node = tb3_coordinator.coordinator_node:main",
-            "semantic_map_memory_node = tb3_coordinator.semantic_map_memory_node:main",
-            "semantic_runtime_debug_node = tb3_coordinator.semantic_runtime_debug_node:main",
         ],
     },
 )

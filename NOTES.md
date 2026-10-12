@@ -1,3 +1,18 @@
+# LocateAnything and retained course design notes
+
+The current pipeline is documented in [README](README.md), the
+[workflow diagram](docs/media/locateanything_overview.svg), and the
+[warehouse guide](docs/warehouse_examples.md). It uses `tb3_interfaces` for
+selected-target messages and LocateAnything for perception, memory, and queries.
+
+The original course notes below are retained as historical background, including
+shared SLAM/Nav2 reasoning. Their old detector commands, package names, and
+measurements describe the upstream course version, not this checkout. Use the
+current README to build and run this repository.
+
+<details>
+<summary>Original course notes (historical reference)</summary>
+
 # NOTES — design rationale, measurements, and hard-won lessons
 
 This file is the "why" of the course workspace. It is written for instructors
@@ -1038,3 +1053,5 @@ The "why it still works" half is the part worth thinking about. A bug that is
 masked by a property of the environment — here, map origin coinciding with the
 spawn pose in small rooms — is the kind that ships, and then surfaces the first
 time someone runs it in a bigger building.
+
+</details>

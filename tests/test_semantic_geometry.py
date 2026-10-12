@@ -8,34 +8,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src" / name)
-                for name in ("tb3_query", "tb3_nav_adapter")]
+                for name in ("tb3_nav_adapter",)]
 
-from tb3_query.query_core import MemoryObject, select_target
 from tb3_nav_adapter.goal_adapter_core import compute_approach_pose
-
-
-def objects():
-    return [MemoryObject("person_0", "person", 0.0, 0.0, 0.9),
-            MemoryObject("person_1", "person", 4.0, 0.0, 0.8)]
-
-
-def test_nearest_is_relative_to_robot_not_map_origin():
-    result = select_target(objects(), "person", "person", "go to person",
-                           robot_x=3.0, robot_y=0.0)
-    assert result.object_id == "person_1"
-    assert (result.x, result.y) == (4.0, 0.0)
-
-
-def test_index_keeps_requested_instance_even_when_farther():
-    result = select_target(objects(), "person", "person", "go to person 0",
-                           desired_index=0, robot_x=3.0, robot_y=0.0)
-    assert result.success and result.object_id == "person_0"
-
-
-def test_unobserved_index_fails_without_substitution():
-    result = select_target(objects(), "person", "person", "go to person 2",
-                           desired_index=2, robot_x=3.0)
-    assert not result.success and not result.object_id
 
 
 def test_target_at_map_origin_has_valid_approach():

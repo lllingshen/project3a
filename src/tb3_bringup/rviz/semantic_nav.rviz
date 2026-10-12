@@ -117,27 +117,6 @@ Visualization Manager:
         Value: /frontiers_markers
         Reliability Policy: Reliable
 
-    - Class: rviz_default_plugins/Image
-      Name: Detector Debug Image
-      Enabled: true
-      Value: true
-      Topic:
-        Value: /detector_node/debug_image
-        Reliability Policy: Reliable
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Normalize Range: true
-      Queue Size: 2
-
-    - Class: rviz_default_plugins/MarkerArray
-      Name: Semantic Memory Markers
-      Enabled: true
-      Value: true
-      Topic:
-        Value: /semantic_memory_markers
-        Reliability Policy: Reliable
-
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

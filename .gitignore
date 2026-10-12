@@ -7,7 +7,7 @@ log/
 __pycache__/
 *.py[cod]
 
-# Model weights — students download these locally (see INSTRUCTIONS.md)
+# External model weights stay outside the repository
 *.pt
 
 # Internal reports (never committed to the course repo)

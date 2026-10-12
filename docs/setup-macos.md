@@ -1,8 +1,15 @@
 # Setting up on macOS (Docker)
 
+This guide retains the shared ROS/Gazebo host and graphics setup. End-to-end
+LocateAnything is currently validated on native Ubuntu with CUDA. The supplied
+Docker image provides simulation and desktop tools; it does not provision the
+LocateAnything model, Eagle, or a CUDA model worker. Configure those separately
+before following the [current two-terminal workflow](../README.md#run-locateanything).
+Historical course timing measurements below do not benchmark LocateAnything.
+
 This page gets you to a running course container with the Gazebo and RViz
 windows showing in a browser tab. Everything after that — building the
-workspace and the six-terminal flow — is identical to Ubuntu and is written
+workspace and configuring the model worker — is described
 down once, in the [README](../README.md); this page only covers what the
 container changes.
 
@@ -10,7 +17,7 @@ It works on Apple Silicon (M1–M4) and on Intel Macs. The image is
 `linux/amd64`: Gazebo Classic 11 has no arm64 packages for Ubuntu 22.04, so
 neither do ROS Humble's `gazebo-ros-pkgs` or `turtlebot3-gazebo`. Apple
 Silicon therefore runs the container through Docker Desktop's Rosetta
-translation. Everything works, just slower than on a native Ubuntu machine —
+translation. The original ROS/Gazebo course ran more slowly than on native Ubuntu —
 see [What to expect](#what-to-expect-on-apple-silicon) before you judge the
 robot's driving.
 
@@ -23,7 +30,7 @@ robot's driving.
    emulation on Apple Silicon**. Without Rosetta, Docker falls back to QEMU,
    which is several times slower and unreliable with Gazebo.
 3. **Settings → Resources** — give the Docker VM at least **6 CPUs and
-   8 GB of memory**; more helps, because Gazebo, SLAM, Nav2 and the detector
+   8 GB of memory**; more helps, because Gazebo, SLAM and Nav2
    all share it. The default 60 GB virtual disk is plenty.
 4. **Apply & restart**, then check from a terminal:
 
@@ -39,7 +46,7 @@ assumes — and **not** into Desktop or Documents:
 
 ```bash
 cd ~
-git clone https://github.com/YiyuchenHu/turtlebot3-gazebo-navigation-hw.git turtlebot3-gazebo-navigation-course
+git clone https://github.com/lllingshen/project3a.git turtlebot3-gazebo-navigation-course
 cd turtlebot3-gazebo-navigation-course
 ```
 
@@ -51,8 +58,7 @@ as `setup 2.bash`-style copies. Any folder outside those two is fine
 (Docker Desktop shares all of `/Users` with containers). An existing clone
 can simply be moved: `mv ~/Desktop/turtlebot3-gazebo-navigation-course ~/`.
 
-The detector weights ship with the repository (README → Setup by platform →
-step 3): there is nothing to download.
+Model weights and the inference environment must be installed separately; see the current README.
 
 ## 3. Build the image — once
 
@@ -61,10 +67,9 @@ cd docker
 docker compose build
 ```
 
-This takes roughly 10–20 minutes and downloads about 3 GB: ROS 2 Humble
-desktop, Gazebo 11, Nav2, SLAM Toolbox and the CPU build of torch — the
-exact apt and pip lists from README → Setup by platform steps 1–2, plus a
-virtual desktop that you will open in the browser. Rebuild only when
+The image includes ROS 2 Humble desktop, Gazebo 11, Nav2, SLAM Toolbox,
+and a browser-accessible virtual desktop. Build time and download size depend
+on your host and cache. Rebuild only when
 something in [`docker/`](../docker/) changes (it is quick after the first
 time: downloads are cached); the image does **not** contain the repository,
 so editing code never requires a rebuild.
@@ -102,7 +107,7 @@ bind-mounted live — with `/opt/ros/humble/setup.bash` sourced,
 set. The four preparation lines the README puts at the top of every terminal
 are still correct; running them again is harmless.
 
-Six tabs are the README's six terminals. A `ros2 launch` in any of them puts
+A `ros2 launch` in a container terminal puts
 its windows on the browser desktop. Edit code with your usual Mac editor —
 the container sees `src/` live, nothing is copied in or out.
 
@@ -111,15 +116,10 @@ does the same without the `cd`.)
 
 ## 6. Continue in the README
 
-- **Build the workspace:** README → Setup by platform → **step 4, Build**, run
-  inside a container shell. Steps 1–3 are already done by the image, and the
-  conda note does not apply.
-- **Run the stack:** README → **Running**, T1
-  to T6 in order, each in its own `docker compose exec tb3 bash` tab.
-  [docs/running-reference.md](running-reference.md) and
-  [docs/troubleshooting.md](troubleshooting.md) apply unchanged in the container.
-- [INSTRUCTIONS.md](../INSTRUCTIONS.md) applies unchanged; its Step 1 apt/pip
-  part is what the image already did.
+Build inside a container shell using the [build instructions](../README.md#setup-and-build).
+Use the container's checkout path in place of `~/project3a`. Starting the full
+LocateAnything demo additionally requires the model worker and CUDA setup
+not supplied by this image. Native Ubuntu is the validated model-runtime path.
 
 ## Day to day
 

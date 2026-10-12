@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 #
 # Course image for macOS / Windows hosts: ROS 2 Humble + Gazebo Classic 11 +
-# Nav2 + the detector's Python stack, plus a virtual desktop you open in a
+# Nav2 + simulation dependencies, plus a virtual desktop you open in a
 # browser (noVNC on port 6080). The repository itself is NOT baked in — the
 # compose file bind-mounts your checkout at ~/turtlebot3-gazebo-navigation-course
 # inside the container, so the README's Build and Running sections apply
@@ -58,21 +58,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       ros-humble-vision-msgs ros-humble-cv-bridge \
       ros-humble-tf2-geometry-msgs \
       ros-humble-rqt-image-view \
+      ros-humble-nav2-regulated-pure-pursuit-controller \
+      nlohmann-json3-dev python3-numpy python3-yaml python3-opencv \
       python3-colcon-common-extensions \
       python3-pip \
       tmux git
 
-# ---------------------------------------------------------------------------
-# 2. pip packages (README → Installation → step 2). Two separate steps, in
-#    this order: the CPU torch build must be in place before ultralytics
-#    resolves its dependencies, otherwise pip fetches the ~2 GB CUDA build.
-#    numpy stays on 1.x because Humble's cv_bridge binding is built against
-#    NumPy 1.x. The cache mount keeps downloaded wheels out of the image.
-# ---------------------------------------------------------------------------
-RUN --mount=type=cache,target=/root/.cache/pip \
-    retry pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cpu
-RUN --mount=type=cache,target=/root/.cache/pip \
-    retry pip install 'numpy==1.26.4' 'opencv-python==4.9.0.80' 'ultralytics==8.4.31'
+# LocateAnything model inference uses a separately provisioned CUDA environment,
+# model checkpoint, and Eagle code. This image supplies ROS/simulation only;
+# it does not install a detector or claim to provide the model runtime.
 
 # ---------------------------------------------------------------------------
 # 3. Browser GUI plumbing — NOT course dependencies; this is what replaces
@@ -114,11 +108,6 @@ if [ -f "$HOME/turtlebot3-gazebo-navigation-course/install/setup.bash" ]; then
 fi
 export TURTLEBOT3_MODEL=waffle_pi
 BASHRC
-
-# ultralytics keeps its settings in ~/.config/Ultralytics and warns on every
-# start when ~/.config is missing (a bare container has none; a desktop
-# Ubuntu always has it). Create it so T5's console matches the native one.
-RUN mkdir -p /root/.config/Ultralytics
 
 WORKDIR /root/turtlebot3-gazebo-navigation-course
 EXPOSE 6080

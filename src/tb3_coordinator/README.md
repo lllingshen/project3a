@@ -1,7 +1,12 @@
 # `tb3_coordinator`
 
-Persistent map landmarks and the mode state machine: `semantic_map_memory_node` promotes short-term memory objects into stable landmarks in the `map` frame, and `coordinator_node` arbitrates EXPLORING vs NAVIGATING — pausing frontier exploration while a `/user_command` is served, resuming after.
+Coordinates exploration and object navigation. A `/user_command` pauses
+exploration, forwards the command to LocateAnything, and waits for a selected
+target and safe approach pose before asking Nav2 to drive there.
 
-- **Nodes:** `semantic_map_memory_node`, `coordinator_node` — Terminal 3, via `tb3_bringup/launch/backend.launch.py`. Plus `semantic_runtime_debug_node` (opt-in: `use_runtime_debug:=true`)
-- **Config:** [`config/coordinator.yaml`](config/coordinator.yaml)
-- **Docs:** [README](../../README.md) · [INSTRUCTIONS](../../INSTRUCTIONS.md) · [NOTES](../../NOTES.md)
+It reports `TARGET_REACHED` or `TARGET_FAILED`. The demo then waits for the
+next command; `auto_resume_exploration:=true` enables automatic resumption.
+Visual memory belongs to `tb3_locateanything`.
+
+- Node: `coordinator_node`, started by `backend.launch.py`.
+- [Configuration](config/coordinator.yaml) · [Main README](../../README.md).

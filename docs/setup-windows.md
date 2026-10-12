@@ -1,5 +1,12 @@
 # Setting up on Windows 10/11 (WSL 2)
 
+This guide retains the shared ROS/Gazebo host and graphics setup. End-to-end
+LocateAnything is currently validated on native Ubuntu with CUDA. The supplied
+Docker image provides simulation and desktop tools; it does not provision the
+LocateAnything model, Eagle, or a CUDA model worker. Configure those separately
+before following the [current two-terminal workflow](../README.md#run-locateanything).
+Historical course timing measurements below do not benchmark LocateAnything.
+
 The recommended Windows setup is **WSL 2 with Ubuntu 22.04**, running ROS 2
 Humble and Gazebo natively inside it. It is not a container and not an
 emulator: the same amd64 Linux binaries the README installs on a native Ubuntu
@@ -62,7 +69,7 @@ Clone into your Linux home directory, the same place the README assumes:
 
 ```bash
 cd ~
-git clone https://github.com/YiyuchenHu/turtlebot3-gazebo-navigation-hw.git turtlebot3-gazebo-navigation-course
+git clone https://github.com/lllingshen/project3a.git turtlebot3-gazebo-navigation-course
 cd turtlebot3-gazebo-navigation-course
 ```
 
@@ -79,8 +86,7 @@ leaves line endings alone; the setting only causes trouble if you clone with
 *Windows* Git and then build in WSL. Verify with `git config core.autocrlf` —
 empty or `false` is what you want.
 
-The detector weights ship with the repository (README → Setup by platform → step 3):
-there is nothing to download.
+Model weights and the inference environment must be installed separately; see the current README.
 
 ## 3. Graphics: pick a renderer (required)
 
@@ -129,16 +135,11 @@ of a session, because every downstream symptom looks like a broken detector.
 
 ## 4. Continue in the README
 
-From here on Windows is Ubuntu. Work through
-[README → Setup by platform](../README.md#setup-by-platform) — the apt list, the pip
-list and `colcon build --symlink-install`, all four steps exactly as written —
-and then [README → Running](../README.md#running).
-
-Each of the README's six terminals is a WSL tab. Windows Terminal opens one
-with `Ctrl-Shift-T`, or run `wsl` in any new tab. The four preparation lines
-the README puts at the top of every terminal apply unchanged.
-
-`INSTRUCTIONS.md` and `NOTES.md` apply unchanged.
+Follow the current [setup and build](../README.md#setup-and-build) instructions,
+including the external model environment, then the
+[two-terminal workflow](../README.md#run-locateanything). Each terminal can be
+one WSL tab. Verify the model worker's CUDA access separately from Gazebo's
+WSLg renderer; the current model runtime has not been revalidated here.
 
 ## What to expect on WSL 2
 
