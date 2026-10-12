@@ -4,8 +4,8 @@ A TurtleBot3 explores a room, builds a map, and remembers the objects it sees.
 You then give it a command, and it navigates to a remembered object.
 This project builds on [Yiyuchen Hu's ROS 2 course workspace](https://github.com/YiyuchenHu/turtlebot3-gazebo-navigation-hw).
 
-LocateAnything recognizes objects from camera images, builds visual memory,
-and uses aligned depth plus camera calibration and TF to locate them. Commands
+LocateAnything recognizes objects in camera images and remembers their pictures
+and positions on the map. Commands
 can name an object, describe its color or purpose, or refer to a remembered ID.
 
 **Map first, query later:** let the robot observe the room before asking it to
@@ -14,7 +14,7 @@ that an unseen object will be found.
 
 ## LocateAnything workflow
 
-![LocateAnything pipeline: exploration, perception, RGB-D visual memory, target selection, and Nav2 navigation](docs/media/locateanything_overview.svg)
+![LocateAnything workflow: explore, recognize objects, remember them, and go to the object you ask for](docs/media/locateanything_overview.svg)
 
 Adapted from the [original course diagram](https://github.com/YiyuchenHu/turtlebot3-gazebo-navigation-hw/blob/main/docs/media/system_overview.svg).
 [Full-resolution PNG](docs/media/locateanything_overview.png).
