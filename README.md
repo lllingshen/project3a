@@ -8,8 +8,7 @@ and positions on the map. Commands
 can name an object, describe its color or purpose, or refer to a remembered ID.
 
 **Map first, query later:** let the robot observe the room before asking it to
-visit an object. A command selects from remembered objects; it does not guarantee
-that an unseen object will be found.
+visit an object. A command selects from remembered objects; 
 
 ## LocateAnything workflow
 
