@@ -4,7 +4,7 @@
 
 当前 demo 默认 `rgbd_camera:=true localization_mode:=depth`。RGB 与深度来自同一个 Gazebo 相机，使用同一时刻和光学坐标系；深度是传感器测量，不是 LocateAnything 猜出的距离。
 
-[PDF 报告](../report/report.pdf)描述的是此前 RGB＋二维激光实现；当前架构和记忆参数以本指南及 README 为准。
+[历史 PDF 报告](https://github.com/lllingshen/project3a/blob/d0c54d34cf448436879fd892b92cc67c6ff933c5/report/report.pdf)描述的是此前 RGB＋二维激光实现；当前架构和记忆参数以本指南及 README 为准。
 
 先按 [README](../README.md) 编译。**两个终端都先执行：**
 
@@ -223,19 +223,19 @@ ros2 topic pub --once -w 3 --keep-alive 2 /user_command std_msgs/String "data: '
 
 下面保留的数字均属于**此前 RGB＋二维激光版本**及其当时的出生点/场景设置，不能作为当前 RGB-D、随机安全出生点版本的通过证据。报告和历史结果没有随这次启动方式修改而重测。
 
-2026-10-10 的[八目标 Memory 修复实测](../report/memory_repair_results.json)记录了此前版本的结果：从第一个探索导航目标到自然停止，较早运行为 554 秒，该次修复运行为 324 秒；探索结束时 8 个真实目标各有一条可用记录，没有重复或无图记录。但共同室内区域的已知地图面积从 31.7125 m² 降为 29.005 m²，路线及叉车托盘也有变化，因此不能宣称相同覆盖下提速，更不能把 `EXPLORATION COMPLETE` 理解为房间 100% 扫完。
+2026-10-10 的[八目标 Memory 修复实测](https://github.com/lllingshen/project3a/blob/d0c54d34cf448436879fd892b92cc67c6ff933c5/report/memory_repair_results.json)记录了此前版本的结果：从第一个探索导航目标到自然停止，较早运行为 554 秒，该次修复运行为 324 秒；探索结束时 8 个真实目标各有一条可用记录，没有重复或无图记录。但共同室内区域的已知地图面积从 31.7125 m² 降为 29.005 m²，路线及叉车托盘也有变化，因此不能宣称相同覆盖下提速，更不能把 `EXPLORATION COMPLETE` 理解为房间 100% 扫完。
 
 同一会话中，`fire_extinguisher_2` → `storage_rack_1` 两条导航均到达，随后各观察到停止超过 11 秒，没有恢复探索；11 秒是测试观察时长，实际等待没有这个时限。第二条导航带来的新视角仍出现“前景货架挡住后方叉车”的定位歧义，中央货架被保留原 ID 并标为冲突：最终 **8 条记录、7 条可用、1 条待确认**。这证明错误覆盖和重复新增受到抑制，不代表 RGB＋二维激光的遮挡归属问题已经解决；也不代表全部 8 个目标的停车位置都已验证。
 
-[仓库实测记录](../report/warehouse_results.json) 保留了之前两个独立场景的连续执行结果：
+[仓库实测记录](https://github.com/lllingshen/project3a/blob/d0c54d34cf448436879fd892b92cc67c6ff933c5/report/warehouse_results.json) 保留了之前两个独立场景的连续执行结果：
 
 - `objects_v4`：旧三目标布局中，叉车 → 灭火器 → 货架，**3/3 通过**；不代表现在的八目标布局已验证。
 - `colors_v3`：启动扫描记录了全部 6 个目标；绿桌 → 蓝桌 → 白椅 → 黑椅 → `person_1` → `person_0`，**6/6 通过**。桌子使用彩色桌面、四根灰色金属腿和可见下框架，外观与碰撞一致。
 
-每组内部没有重置或重启。通过条件包括选对实体、定位误差 ≤0.5 m、最终距物体原点 ≤1.2 m、`TARGET_REACHED` 和恢复探索。[红蓝椅子实测](../report/visual_memory_results.json) 也记录了最终连续 **2/2** 通过。这些是具体运行结果，不是一般成功率基准，也不保证每次启动都立即看全所有物体。
+每组内部没有重置或重启。通过条件包括选对实体、定位误差 ≤0.5 m、最终距物体原点 ≤1.2 m、`TARGET_REACHED` 和恢复探索。[红蓝椅子实测](https://github.com/lllingshen/project3a/blob/d0c54d34cf448436879fd892b92cc67c6ff933c5/report/visual_memory_results.json) 也记录了最终连续 **2/2** 通过。这些是具体运行结果，不是一般成功率基准，也不保证每次启动都立即看全所有物体。
 
 这些 2/2、3/3、6/6 记录均来自改为“到达后停住”之前的自动恢复探索设置，不能用来证明新的等待行为已经通过实测。`auto_resume_exploration:=true` 可以恢复旧控制行为，但不会恢复旧三目标布局。
-另一次[独立停住等待实测](../report/hold_results.json)也使用旧三目标布局，未重置地图或记忆，两条命令到达后各保持停止 11 秒，且第二条从 `TARGET_REACHED` 正常接收；这是控制行为测试，不是新的语义精度评估，也不代表八目标场景已通过验证。
+另一次[独立停住等待实测](https://github.com/lllingshen/project3a/blob/d0c54d34cf448436879fd892b92cc67c6ff933c5/report/hold_results.json)也使用旧三目标布局，未重置地图或记忆，两条命令到达后各保持停止 11 秒，且第二条从 `TARGET_REACHED` 正常接收；这是控制行为测试，不是新的语义精度评估，也不代表八目标场景已通过验证。
 
 记录同时保留了旧 `colors_v1` 的一次人物导航：目标选对，但 Nav2 超过 60 秒未到达；后续人物重试通过。最新六条连续通过不能证明所有局部规划卡顿都已解决。
 

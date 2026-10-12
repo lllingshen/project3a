@@ -170,11 +170,8 @@ correct object was selected.**
 
 - **LocateAnything details and warehouse examples:** [warehouse guide](docs/warehouse_examples.md).
 - **Troubleshooting:** [troubleshooting](docs/troubleshooting.md).
-- **Earlier project report and measurements:** [report](report/report.pdf),
-  [initial results](report/results.json), [visual-memory results](report/visual_memory_results.json),
-  and [warehouse results](report/warehouse_results.json).
 
-The report and saved measurements describe earlier versions and conditions;
+Historical measurements linked in the warehouse guide describe earlier versions and conditions;
 they do not validate every behavior of the current RGB-D pipeline.
 
 ## Credits and license
