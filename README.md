@@ -2,7 +2,6 @@
 
 A TurtleBot3 explores a room, builds a map, and remembers the objects it sees.
 You then give it a command, and it navigates to a remembered object.
-This project builds on [Yiyuchen Hu's ROS 2 course workspace](https://github.com/YiyuchenHu/turtlebot3-gazebo-navigation-hw).
 
 LocateAnything recognizes objects in camera images and remembers their pictures
 and positions on the map. Commands
